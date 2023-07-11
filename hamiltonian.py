@@ -35,8 +35,8 @@ complex_const = -1j
 
 def get_H(time):
         
-    j = [0.7,0.5,0.2,0.9]
-    omega = -20
+    j = [1,1,1,1]
+    omega = -10
     rabif = [0,0,0,0,omega]
     detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*(j[0]+j[1]+j[2]+j[3])]
     inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3]] 
@@ -122,10 +122,6 @@ def get_U(a,b,g):
 def evolution(time, params):
     N1 = 5
     L = 4
-    # l=4, k=1,2 and i goes from 1 to N1
-    # a = torch.ones([L,2,N1])
-    # b = torch.ones([L,2,N1])
-    # g = torch.ones([L,2,N1])
     a = params[0]
     b = params[1]
     g = params[2]
@@ -211,11 +207,11 @@ class QuantumPerceptron(nn.Module):
         self.layer2 = nn.Linear(hidden_size, output_size)
         L = 4
         N1 = 5
-
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         b = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         g = torch.normal(mean=0.0, std=1., size=[L,2,N1])
-        self.params = nn.Parameter(torch.zeros_like(torch.stack((a,b,g))))
+        self.params = nn.Parameter(torch.stack((a,b,g)))
+        self.params.requires_grad = True
 
         # self.params = nn.Parameter(torch.tensor([1.,0.,0.,0.,0.,0.,0.,0]))
 
@@ -229,12 +225,14 @@ class QuantumPerceptron(nn.Module):
 
     def forward(self, state):
         r = self.init_r(state)
-        state = state.reshape(1, -1)
-        self.r = state.to(torch.float32)
-        # self.r = torch.tensor(r).to(torch.float32)
+        self.r = self.r.to(torch.float32)
+        r = r.reshape(1, -1)
+        print(self.params)
+        # self.r = state.to(torch.float32)
         # self.r = torch.tensor(r).to(torch.float32)
         # state = torch.tensor(state).reshape(1,16)
         # self.r = state.to(torch.float32)
+        print(self.r)
         out = self.layer1(self.r)
         out = F.gelu(out)
         for layer in self.mid_layers:
@@ -262,9 +260,9 @@ class QuantumPerceptron(nn.Module):
 # r.append(1.)
 
 
-model = QuantumPerceptron(input_size= 16, output_size= 1, hidden_size = 144)
+model = QuantumPerceptron(input_size= 10, output_size= 1, hidden_size = 144)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr = 0.01)
+optimizer = optim.Adam(model.parameters(), lr = 0.0001)
 model = model
 # params = torch.randn(8)  # initial 
 # Initialize parameters with Gaussian distribution centered at 0
