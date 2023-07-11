@@ -132,6 +132,7 @@ def print_status(params):
 
 import torch.nn as nn
 import torch.optim as optim
+from heisenberg import QuantumDataset
 
 class mfaPerceptron(nn.Module):
     """"
@@ -175,7 +176,7 @@ class mfaPerceptron(nn.Module):
                 matrices.append(m)
             # pdb.set_trace()
             result = reduce(torch.kron, matrices)
-            matrix += result
+            matrix += self.J[j]*result
 
         for j in range(N1-1):
             matrices = []
@@ -185,7 +186,7 @@ class mfaPerceptron(nn.Module):
             # print(matrices)
             # pdb.set_trace()
             result = reduce(torch.kron, matrices)
-            matrix2 += result
+            matrix2 += self.J[j]*result
 
         for j in range(N1-1):
             matrices = []
@@ -194,9 +195,9 @@ class mfaPerceptron(nn.Module):
                 matrices.append(m)
             result = reduce(torch.kron, matrices)
             # pdb.set_trace()
-            matrix3 += result
+            matrix3 += self.J[j]*result
 
-        ham = self.J*(matrix + matrix2 + matrix3)
+        ham = (matrix + matrix2 + matrix3)
         # print(ham)
         result_conj_transpose = torch.conj(result1).T
         #`pdb.set_trace()
@@ -228,8 +229,10 @@ output_vectors_list = []
 output_states_list = []
 labels_list = []
 
+J_array = 2 * torch.rand(20,3) - 1
 
-for J in tqdm(torch.arange(-1, 1.01, 0.1)):
+
+for J in tqdm(J_array):
         
     params = torch.normal(mean=0, std=1, size=(8,))
 
@@ -306,7 +309,7 @@ class MFADataset(Dataset):
         output_vectors = self.output_vectors_list[idx]
         output_states = self.output_state_list[idx]
         label = labels_list[idx]
-        return J, output_energy, output_vectors, label
+        return J, output_energy, output_vectors, label, output_states
 
 # Assuming you have the necessary variables J_values, good_results_outputs, and good_results_outs
 
@@ -321,10 +324,11 @@ class MFADatasetLoader():
         return dataset, dataloader
 
 # Iterate over the dataloader
-for J, good_results_output, good_results_out, value in dataloader:
-    print(f"J: {J.item()}")
+for J, good_results_output, good_results_out, value, state in dataloader:
+    print(f"J: {J}")
     print(f"Good Results Output: {good_results_output.item()}")
     print(f"Good Results Out: {good_results_out}")
     print(f"Value: {value.item()}")
+    print(f"State: {state}")
     print("--------------------------")
     

@@ -33,7 +33,7 @@ def heisenberg(J):
             matrices.append(m)
         # pdb.set_trace()
         result = reduce(torch.kron, matrices)
-        matrix += result
+        matrix += J[j]*result
 
     for j in range(N1-1):
         matrices = []
@@ -43,7 +43,7 @@ def heisenberg(J):
         # print(matrices)
         # pdb.set_trace()
         result = reduce(torch.kron, matrices)
-        matrix2 += result
+        matrix2 += J[j]*result
 
     for j in range(N1-1):
         matrices = []
@@ -52,9 +52,9 @@ def heisenberg(J):
             matrices.append(m)
         result = reduce(torch.kron, matrices)
         # pdb.set_trace()
-        matrix3 += result
+        matrix3 += J[j]*result
 
-    ham = J*(matrix + matrix2 + matrix3)
+    ham = matrix + matrix2 + matrix3
     eigenvalues, eigenvectors = torch.linalg.eigh(ham)
     eigenvectors = eigenvectors.t()
     threshold = 1e-10
@@ -65,29 +65,77 @@ def heisenberg(J):
     # print(eigenvectors)
     return eigenvalues[0], eigenvectors[0]
 
+import random
+# random.seed(0)  # sets the seed to 0
+
+
 # with open("C:\\Users\\91833\\Desktop\\SURF\\output_gs.txt", "w") as file:
-for J in torch.arange(-1, 1.01, 0.1):
-    eigenvalue, eigenvector = heisenberg(J)
-    print(J, eigenvalue, eigenvector, -1)
+# for iter in torch.arange(20):
+#     random.seed(iter.item())
+#     n = 3  # replace with your desired number of samples
+#     J = [random.uniform(-1, 1) for _ in range(n)]
+#     eigenvalue, eigenvector = heisenberg(J)
+#     print(J, eigenvalue, eigenvector, -1)
 
+import torch
 from torch.utils.data import Dataset, DataLoader
+import random
 
-# Define a custom dataset
+# Your heisenberg function here...
+
 class QuantumDataset(Dataset):
-    def __init__(self, J_values):
-        self.J_values = J_values
+    def __init__(self, num_samples):
+        self.num_samples = num_samples
+        self.J_values = []
+        for _ in range(num_samples):
+            random.seed(_)
+            n = 3  # replace with your desired number of samples
+            J = ([torch.tensor(random.uniform(-1, 1)) for _ in range(n)])
+            self.J_values.append(J)
 
     def __len__(self):
-        return len(self.J_values)
+        return self.num_samples
 
     def __getitem__(self, idx):
         J = self.J_values[idx]
         eigenvalue, eigenvector = heisenberg(J)
-        return J, eigenvalue, eigenvector, -1
+        return J, eigenvalue, eigenvector, torch.tensor(-1)
 
 # Create a PyTorch DataLoader
-J_values = torch.arange(-1, 1.01, 0.1)
+dataset = QuantumDataset(20)
+dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
 
+# Iterate over the dataloader
+for J, eigenvalue, eigenvector, val in dataloader:
+    print(f"J: {J} | Eigenvalue: {eigenvalue} | Eigenvector: {eigenvector}")
+
+# from torch.utils.data import Dataset, DataLoader
+
+# # Define a custom dataset
+# class QuantumDataset(Dataset):
+#     def __init__(self, J_values):
+#         self.J_values = J_values
+
+#     def __len__(self):
+#         return len(self.J_values)
+
+#     def __getitem__(self, idx):
+#         J = self.J_values[idx]
+#         eigenvalue, eigenvector = heisenberg(J)
+#         return J, eigenvalue, eigenvector, 0.0
+
+# # Create a PyTorch DataLoader
+# # J_values = torch.arange(-1, 1.01, 0.05)
+# J_values=[]
+
+# for iter in torch.arange(20):
+#     random.seed(iter.item())
+#     n = 3  # replace with your desired number of samples
+#     J = [random.uniform(-1, 1) for _ in range(n)]
+#     J_values.append(J)
+#     print(J, eigenvalue, eigenvector, -1)
+
+J_values = 20
 
 class QuantumDatasetLoader():
     def return_dataset(self):
@@ -96,8 +144,8 @@ class QuantumDatasetLoader():
         return dataset, dataloader
 
 # Iterate over the dataloader
-# for J, eigenvalue, eigenvector, val in dataloader:
-#     print(f"J: {J.item():.2f} | Eigenvalue: {eigenvalue.item():.4f} | Eigenvector: {eigenvector.squeeze()} | Value: {val.item()}")
+for J, eigenvalue, eigenvector, val in dataloader:
+    print(f"J: {J} | Eigenvalue: {eigenvalue.item():.4f} | Eigenvector: {eigenvector.squeeze()} | Value: {val.item()}")
     
 
 
@@ -116,7 +164,7 @@ class QuantumDatasetLoader():
 #     ham = ham.cpu()
 # ham_np = ham.numpy()
 
-# complex_const = -1j
+complex_const = -1j
 # time = 0.01
 # U = scipy.linalg.expm(complex_const * ham_np * time)
 # vec1 = np.abs(np.dot(U, vec0)) ** 2
