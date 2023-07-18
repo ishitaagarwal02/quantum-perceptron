@@ -23,26 +23,76 @@ from tqdm import tqdm
 
 # print(vec1)
 
-from heisenberg import QuantumDataset, QuantumDatasetLoader
-from mfa import MFADataset, MFADatasetLoader
-
 from torch.utils.data import Dataset, DataLoader
 import pdb
 
 complex_const = -1j
 
 
+j = [1,1,1,1]
+omega = -20
+rabif = [0,0,0,0,omega]
+detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*(j[0]+j[1]+j[2]+j[3])]
+inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3]] 
+#length of inter would be number of edges and would be labelled based on temp
+# j = [1,1,1,1,1,1]
+# omega = -40
+# rabif = [0,0,0,0,0,0,omega]
+# detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5])]
+# inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5]] 
+N1 = 5
+# Initialize the resulting matrix as zero
+matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
+matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
+matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
+ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
+
+s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex128)
+p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex128)
+n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex128)
+
+# Loop over all combinations
+for j in range(N1):
+    matrices = []
+    for i in range(N1):
+        m = s if i == j else p
+        matrices.append(m)
+    result = reduce(torch.kron, matrices)
+    matrix += rabif[j] * result
+# pdb.set_trace()
+
+for j in range(N1):
+    matrices = []
+    for i in range(N1):
+        m = n if i == j else p
+        matrices.append(m)
+    result = reduce(torch.kron, matrices)
+    matrix2 += detun[j] * result
+
+for j in range(N1-1):
+    matrices = []
+    for i in range(N1-1):
+        m=n if i==j else p
+        matrices.append(m)
+    matrices.append(n)    
+    result = reduce(torch.kron, matrices)
+    matrix3 += inter[j]*result
+
 
 def get_H(time):
         
     time = time
     j = [1,1,1,1]
-    omega = -10
+    omega = -40
     rabif = [0,0,0,0,omega]
     detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*(j[0]+j[1]+j[2]+j[3])]
     inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3]] 
     #length of inter would be number of edges and would be labelled based on temp
-
+    # j = [1,1,1,1,1,1]
+    # omega = -40
+    # rabif = [0,0,0,0,0,0,omega]
+    # detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5])]
+    # inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5]] 
     N1 = 5
     # Initialize the resulting matrix as zero
     matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
@@ -129,20 +179,28 @@ def evolution(time, params,l):
     a = params[0]
     b = params[1]
     g = params[2]
-    H = get_H(time)
+    complex_const = -1j
+    ham = (complex_const * time)*(matrix - matrix2 + matrix3)
+    # pdb.set_trace()
+    # if ham.is_cuda:
+    #     ham = ham.cpu()
+    # ham_np = ham.numpy()
+    # time = 0.01
+    H = ham.matrix_exp()
+    # H = get_H(time)
 
     U_final = torch.eye(2**N1, dtype=torch.complex128)
-    U1 = get_U(a[l][0],b[l][0],g[l][0])
-    U2 = get_U(a[l][1],b[l][1],g[l][1])
+    # U1 = get_U(a[l][0],b[l][0],g[l][0])
+    # U2 = get_U(a[l][1],b[l][1],g[l][1])
     # pdb.set_trace()
-    U_result = torch.matmul(torch.matmul(U2, H), U1)
-    U_final = torch.matmul(U_result, U_final)
-    # for l in range(L):
-    #     U1 = get_U(a[l][0],b[l][0],g[l][0])
-    #     U2 = get_U(a[l][1],b[l][1],g[l][1])
-    #     # pdb.set_trace()
-    #     U_result = U2 * H * U1
-    #     U_final = U_result * U_final
+    # U_result = torch.matmul(torch.matmul(U2, H), U1)
+    # U_final = torch.matmul(U_result, U_final)
+    for l in range(L):
+        U1 = get_U(a[l][0],b[l][0],g[l][0])
+        U2 = get_U(a[l][1],b[l][1],g[l][1])
+        # pdb.set_trace()
+        U_result = torch.matmul(torch.matmul(U2, H), U1)
+        U_final = torch.matmul(U_result, U_final)
     
     return U_final
 
@@ -152,49 +210,19 @@ def expectation(state,time,params):
     L=4
     state = state.reshape(4, 4)
     state = torch.flatten(torch.kron(state, torch.tensor([1.,0.])))
-    for l in range(L):
-        U = evolution(time,params,l)
-        state = U @ state
-    # state_final = U @ state
-    # norm = torch.norm(state_final)
-    # state_final = state_final/norm
-    # state_final = torch.abs(state_final)**2
-    # state_final = torch.abs(torch.dot(U, state)) ** 2
+    # for l in range(L):
+    U = evolution(time,params,L)
+    state = U @ state
     state_final = torch.abs(state) ** 2
     exp0 = torch.sum(state_final[::2])
     exp1 = torch.sum(state_final[1::2])
     expectation = exp0 - exp1
     return state_final, expectation
 
-# tensor([ 0.5508+0.0000j,  0.0000+0.0000j,  0.2456+0.2155j,  0.0000+0.0000j,
-#          0.2928+0.1506j,  0.0000+0.0000j,  0.0716+0.1817j,  0.0000+0.0000j,
-#          0.3332+0.1449j,  0.0000+0.0000j,  0.0919+0.1950j,  0.0000+0.0000j,
-#          0.1375+0.1681j,  0.0000+0.0000j, -0.0045+0.1288j, -0.0000+0.0000j,
-#          0.2108+0.1786j,  0.0000+0.0000j,  0.0241+0.1621j,  0.0000+0.0000j,
-#          0.0632+0.1526j,  0.0000+0.0000j, -0.0315+0.0928j, -0.0000+0.0000j,
-#          0.0806+0.1635j,  0.0000+0.0000j, -0.0281+0.1044j, -0.0000+0.0000j,
-#         -0.0019+0.1089j, -0.0000+0.0000j, -0.0435+0.0478j, -0.0000+0.0000j],
-#        dtype=torch.complex128, grad_fn=<ReshapeAliasBackward0>)
-# L = 4
-# N1 = 5
-
-# a = torch.normal(mean=0, std=1, size=[L,2,N1])
-# b = torch.normal(mean=0, std=1, size=[L,2,N1])
-# g = torch.normal(mean=0, std=1, size=[L,2,N1])
-# r = []
-# params = [a,b,g]
-
-
-
-# for t in torch.arange(0.01,0.1,0.01):
-#     r.append(expectation(state, t, params))
-# r.append(1.)
-
 
 #####################  Import Data loader ###########################
 
-from heisenberg import QuantumDataset
-from mfa import MFADataset, MFADatasetLoader
+from z2states import Z2StateDataset, Z2DatasetLoader, Z3StateDataset, Z3DatasetLoader
 
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
@@ -216,12 +244,12 @@ class QuantumPerceptron(nn.Module):
     """
     def __init__(self, input_size, hidden_size, output_size):
         super(QuantumPerceptron, self).__init__()
-        # self.layer1 = nn.Linear(input_size, hidden_size)
+        self.layer1 = nn.Linear(input_size, output_size)
         # self.mid_layers = nn.ModuleList()
         # for _ in range(num_layers):
         #     self.mid_layers.append(nn.Linear(hidden_size, hidden_size))
         # self.layer2 = nn.Linear(hidden_size, output_size)
-        self.layer1 = nn.Linear(input_size, output_size)
+        # self.layer1 = nn.Linear(input_size, output_size)
         L = 4
         N1 = 5
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
@@ -234,22 +262,22 @@ class QuantumPerceptron(nn.Module):
 
     def init_r(self, state):
         self.r = []
-        for t in torch.arange(0.01,0.1,0.01):
+        for t in torch.arange(0.1,1.,0.1):
             state_final, expectations = expectation(state, t, self.params)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
         self.r = torch.stack(self.r)
         return self.r
     
-    def evolve(self, state):
-        self.r = []
-        for t in torch.arange(0.01,0.1,0.01):
-            state_final, expectations = expectation(state, t, self.params)
-            # self.r.append(state_final)
-            self.r = state_final
-        # self.r.append(torch.tensor(1.).to(torch.float32))
-        # self.r = torch.stack(self.r)
-        return self.r
+    # def evolve(self, state):
+    #     self.r = []
+    #     for t in torch.arange(0.01,0.1,0.02):
+    #         state_final, expectations = expectation(state, t, self.params)
+    #         # self.r.append(state_final)
+    #         self.r = state_final
+    #     # self.r.append(torch.tensor(1.).to(torch.float32))
+    #     # self.r = torch.stack(self.r)
+    #     return self.r
 
     def forward(self, state):
         final_state = self.init_r(state)
@@ -272,21 +300,6 @@ class QuantumPerceptron(nn.Module):
         return out
         # return out
 
-# L = 4
-# N1 = 5
-# input_size = 2**N1  # number of parameters in the return_energy function
-# output_size = 2*L*N1*3  # since return_energy returns a single value
-
-# a = torch.normal(mean=0, std=1, size=[L,2,N1])
-# b = torch.normal(mean=0, std=1, size=[L,2,N1])
-# g = torch.normal(mean=0, std=1, size=[L,2,N1])
-# r = []
-# params = [a,b,g]
-
-# for t in torch.arange(0.01,0.1,0.01):
-#     r.append(expectation(state, t, params))
-# r.append(1.)
-
 
 model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 144)
 criterion = nn.MSELoss()
@@ -298,11 +311,11 @@ import matplotlib.pyplot as plt
 # Set a seed for reproducibility
 torch.manual_seed(0)
 
-x = QuantumDatasetLoader()
-y = MFADatasetLoader()
+x = Z2DatasetLoader()
+y = Z3DatasetLoader()
 
-heisenberg_dataset, heisenberg_dataloader = x.return_dataset()
-mfa_dataset, mfa_dataloader = y.return_dataset()
+z2_dataset, z2_dataloader = x.return_dataset()
+z3_dataset, z3_dataloader = y.return_dataset()
 
 import pandas as pd
 
@@ -314,32 +327,8 @@ eigenvalues = []
 eigenvectors = []
 vals = []
 
-# # Iterate over the DataLoader
-# for J, eigenvalue, eigenvector, val in tqdm(heisenberg_dataloader):
-#     # Add the values to their respective lists
-#     Js.append(J)
-#     eigenvalues.append(eigenvalue)
-#     eigenvectors.append(eigenvector)
-#     vals.append(val)
 
-# for J, eigenvalue, _, val, eigenvector in tqdm(mfa_dataloader):
-#     # Add the values to their respective lists
-#     Js.append(J)
-#     eigenvalues.append(eigenvalue)
-#     eigenvectors.append(eigenvector)
-#     vals.append(val)
-
-# Convert lists into a DataFrame
-# df = pd.DataFrame({
-#     'J': Js,
-#     'Eigenvalue': eigenvalues,
-#     'Eigenvector': eigenvectors,
-#     'Val':vals,
-# })
-
-
-
-for epoch in range(120):
+for epoch in range(1000):
     print("epoch:", epoch)
     try:
         losses = []
@@ -352,22 +341,18 @@ for epoch in range(120):
             # pdb.set_trace()
 
         # for mfa, quant in tqdm(zip(mfa_dataloader, heisenberg_dataloader)):
-        for J, eigenvalue, eigenvector, val in tqdm(heisenberg_dataloader):
-            pred = model(eigenvector)
+        for state, val in tqdm(z2_dataloader):
+            pred = model(state)
             loss = criterion(pred, val.float())
             total_loss += loss
             losses.append(loss.item())
             
-        for J, eigenvalue, _, val, eigenvector in tqdm(mfa_dataloader):
-            eigenvector = eigenvector.to(torch.complex128)
-            eigenvector = eigenvector.reshape(1, -1)
-            eigenvector = eigenvector.detach()
-            val = val.detach()
-            pred = model(eigenvector)
+        for state, val in tqdm(z3_dataloader):
+            pred = model(state)
             loss = criterion(pred, val.float())
-            total_loss += loss 
+            total_loss += loss
             losses.append(loss.item())
-        #`pdb.set_trace()
+            
         print("Backward prop...")
         total_loss.backward()
         print(total_loss)
@@ -394,19 +379,12 @@ for epoch in range(120):
 
 
         
-        # if epoch % 1 == 0:
-        #     print("Loss: {} || last_prediction: {} || epoch: {}/500".format(total_loss, pred, epoch))
-        #     plt.plot([loss.detach().numpy() for loss in losses])
-        #     print("Parameters: ")
-            # for name, param in model.named_parameters():
-            #     print("{}: {}".format(name, param.data))
-
         model.eval()
 
     # We don't need to track gradients for validation, so wrap in 
     # no_grad to save memory
 
-        if epoch % 5 == 0 and epoch != 0:
+        if epoch % 5 == 0:
             print("Starting accuracy calculation...")
             with torch.no_grad():
 
@@ -414,11 +392,11 @@ for epoch in range(120):
                 total_predictions = 0
 
                 print("Iterating through Heisenberg (for accuracy)...")    
-                for J, eigenvalue, eigenvector, val in tqdm(heisenberg_dataloader):
-                    pred = model(eigenvector)
+                for state, val in tqdm(z2_dataloader):
+                    pred = model(state)
                     # Convert predictions and true values to -1 or 1
                     pred_rounded = torch.where(pred < 0, -1, 1)
-                    val_rounded = torch.where(val > 0., 1, -1)
+                    val_rounded = torch.where(val.float() > 0., 1, -1)
                     # pdb.set_trace()
 
                     # Count correct predictions
@@ -427,12 +405,12 @@ for epoch in range(120):
                     total_predictions += len(val)
 
                 print("Iterating through MFA (for accuracy)...")
-                for J, eigenvalue, _, val, eigenvector in tqdm(mfa_dataloader):
-                    pred = model(eigenvector)
+                for state, val in tqdm(z3_dataloader):
+                    pred = model(state)
 
                     # Convert predictions and true values to -1 or 1
                     pred_rounded = torch.where(pred < 0, -1, 1)
-                    val_rounded = torch.where(val > 0., 1, -1)
+                    val_rounded = torch.where(val.float() > 0., 1, -1)
 
                     # Count correct predictions
                     correct_predictions += torch.sum(pred_rounded == val_rounded).item()
@@ -443,9 +421,9 @@ for epoch in range(120):
                 print(f'Accuracy: {accuracy}')
     
     except KeyboardInterrupt:
-        # pdb.set_trace()
+        pdb.set_trace()
         continue
 
 # pdb.set_trace()
-file_path = './quantumPerc2.pth'
+file_path = './quantumPercPhase2.pth'
 torch.save(model.state_dict(),file_path)

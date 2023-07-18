@@ -1,0 +1,233 @@
+import torch
+import pdb
+from functools import reduce
+from scipy.linalg import expm
+import scipy.sparse as sparse
+import scipy.linalg
+import numpy as np
+from scipy.sparse.linalg import expm_multiply
+import numpy as np
+import random
+from torch.utils.data import Dataset, DataLoader
+
+
+# torch.manual_seed(0)
+def z1phase():
+    
+    N1 = 4
+    states00 = []
+    states11 = []
+    zero_state = torch.tensor([1, 0], dtype=torch.complex128)
+    one_state = torch.tensor([0, 1], dtype=torch.complex128)
+    matrix = []
+    # for i in torch.arange(15):
+        # generate 0000 type states
+    for j in torch.arange(N1):
+        r = torch.rand(1) * (1. - 0.7) + 0.7
+        r = torch.tensor([r]) 
+        # phi = 2 * torch.pi * torch.rand(1)
+        # = torch.cos(phi) + 1j*torch.sin(phi)
+        # = torch.tensor(]) 
+        s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*one_state
+        matrix.append(s)
+    
+    states11 = reduce(torch.kron, matrix)
+    matrix = []
+    # generate 1111 type states
+    for j in torch.arange(N1):
+        r = torch.rand(1) * (1. - 0.7) + 0.7
+        r = torch.tensor([r]) 
+        # phi = 2 * torch.pi * torch.rand(1)
+        # = torch.cos(phi) + 1j*torch.sin(phi)
+        # = torch.tensor(]) 
+        s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*one_state
+        # pdb.set_trace()
+        matrix.append(s)
+        
+    states00 = reduce(torch.kron, matrix) 
+    return states11, states00
+
+
+def z2phase():
+    
+    N1 = 4
+    states10 = []
+    states01 = []
+    zero_state = torch.tensor([1, 0], dtype=torch.complex128)
+    one_state = torch.tensor([0, 1], dtype=torch.complex128)
+    matrix = []
+    # for i in torch.arange(15):
+        # generate 0101 type states
+    for j in torch.arange(N1):
+        r = torch.rand(1) * (1. - 0.7) + 0.7
+        r = torch.tensor([r]) 
+        phi = 2 * torch.pi * torch.rand(1)
+        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        e_phi = torch.tensor(e_phi) 
+        if j%2==0:
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+        else:
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+        matrix.append(s)
+    
+    states10 = reduce(torch.kron, matrix)
+    matrix = []
+    # generate 1010 type states
+    for j in torch.arange(N1):
+        r = torch.rand(1) * (1. - 0.7) + 0.7
+        r = torch.tensor([r]) 
+        phi = 2 * torch.pi * torch.rand(1)
+        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        e_phi = torch.tensor(e_phi) 
+        if j%2==1:
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+        else:
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+        # pdb.set_trace()
+        matrix.append(s)
+        
+    states01 = reduce(torch.kron, matrix) 
+    return states10, states01
+
+def z3phase():
+    N1 = 4
+    states100 = []
+    states010 = []
+    states001 = []
+    zero_state = torch.tensor([1, 0], dtype=torch.complex128)
+    one_state = torch.tensor([0, 1], dtype=torch.complex128)
+    matrix = []
+    # for i in torch.arange(15):
+    # generate 001 type states
+    for j in torch.arange(N1):
+        r = 0.3 * torch.rand(1)
+        r = torch.tensor([r]) 
+        phi = 2 * torch.pi * torch.rand(1)
+        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        e_phi = torch.tensor(e_phi) 
+        # print(r)
+        if j%3==0:
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+        else:
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+        matrix.append(s)
+    
+    states100 = reduce(torch.kron, matrix)
+    # print(states100)
+    matrix = []
+    # generate 010 type states
+    for j in torch.arange(N1):
+        r = 0.3 * torch.rand(1)
+        # print(r)
+        r = torch.tensor([r]) 
+        phi = 2 * torch.pi * torch.rand(1)
+        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        e_phi = torch.tensor(e_phi) 
+        if j%3==1:
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+        else:
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+        # pdb.set_trace()
+        matrix.append(s)
+
+    states010 = reduce(torch.kron, matrix)  
+    # print(states010)  
+    matrix = []
+    # generate 001 type states
+    for j in torch.arange(N1):
+        r = 0.3 * torch.rand(1)
+        r = torch.tensor([r]) 
+        phi = 2 * torch.pi * torch.rand(1)
+        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        e_phi = torch.tensor(e_phi) 
+        if j%3==2:
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+        else:
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+        # pdb.set_trace()
+        matrix.append(s)
+        
+    states001 = reduce(torch.kron, matrix)   
+    # print(states001)
+
+    return states100, states010, states001
+
+for i in torch.arange(15):
+    s11, s12 = z1phase()
+
+for i in torch.arange(15):
+    s21, s22 = z2phase()
+
+for i in torch.arange(10):    
+    s31, s32, s33 = z3phase()
+
+z2state_list = []
+z2label_list = []
+for i in torch.arange(9):
+    s21, s22 = z2phase()
+    z2state_list.append(s21)
+    z2state_list.append(s22)
+    z2label_list.append(torch.tensor(-1.))  # Adding label -1 for each state
+    z2label_list.append(torch.tensor(-1.))
+
+class Z2StateDataset(Dataset):
+    def __init__(self, z2state_list, z2label_list):
+        self.state_list = z2state_list
+        self.label_list = z2label_list
+
+    def __len__(self):
+        return len(self.state_list)
+
+    def __getitem__(self, idx):
+        return self.state_list[idx], self.label_list[idx]
+
+dataset_z2 = Z2StateDataset(z2state_list, z2label_list)
+
+# Create the dataloader
+dataloader_z2 = DataLoader(dataset_z2, batch_size=1, shuffle=False)
+
+class Z2DatasetLoader():
+    def return_dataset(self):
+        dataset = Z2StateDataset(z2state_list, z2label_list)
+        dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+        return dataset, dataloader
+    
+for states, labels in dataloader_z2:
+    # pdb.set_trace()
+    print(states, labels)
+
+
+z3state_list = []
+z3label_list = []
+for i in torch.arange(6):
+    s31, s32, s33 = z3phase()
+    z3state_list.append(s31)
+    z3state_list.append(s32)
+    z3state_list.append(s33)
+    z3label_list.append(torch.tensor(1.))  # Adding label -1 for each state
+    z3label_list.append(torch.tensor(1.))
+    z3label_list.append(torch.tensor(1.))
+
+class Z3StateDataset(Dataset):
+    def __init__(self, z3state_list, z3label_list):
+        self.state_list = z3state_list
+        self.label_list = z3label_list
+
+    def __len__(self):
+        return len(self.state_list)
+
+    def __getitem__(self, idx):
+        return self.state_list[idx], self.label_list[idx]
+
+dataset_z3 = Z3StateDataset(z3state_list, z3label_list)
+
+class Z3DatasetLoader():
+    def return_dataset(self):
+        dataset = Z3StateDataset(z3state_list, z3label_list)
+        dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+        return dataset, dataloader
+
+# Create the dataloader
+dataloader_z3 = DataLoader(dataset_z3, batch_size=1, shuffle=False)
+for states, labels in dataloader_z3:
+    print(states, labels)
