@@ -1,13 +1,18 @@
 import torch
 from functools import reduce
-from scipy.linalg import expm
-import scipy.sparse as sparse
+# from scipy.linalg import expm
+# import scipy.sparse as sparse
 import scipy.linalg
 import numpy as np
-from scipy.sparse.linalg import expm_multiply
-from graph import unit_disk_grid_graph
+# from scipy.sparse.linalg import expm_multiply
+# from graph import unit_disk_grid_graph
 import numpy as np
 from tqdm import tqdm
+import warnings
+
+warnings.filterwarnings("ignore")
+
+
 
 # print(ham)
 # vec0 = np.zeros(2**N1)
@@ -22,6 +27,7 @@ from tqdm import tqdm
 # vec1 = np.abs(np.dot(U, vec0)) ** 2
 
 # print(vec1)
+device = "cuda:0"
 
 from torch.utils.data import Dataset, DataLoader
 import pdb
@@ -29,18 +35,27 @@ import pdb
 complex_const = -1j
 
 
-j = [1,1,1,1]
+# j = [1,1,1,1]
+# omega = -20
+# rabif = [0,0,0,0,omega]
+# detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*(j[0]+j[1]+j[2]+j[3])]
+# inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3]] 
+# #length of inter would be number of edges and would be labelled based on temp
+
+
+j = [1,1,1,1,1,1]
 omega = -20
-rabif = [0,0,0,0,omega]
-detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*(j[0]+j[1]+j[2]+j[3])]
-inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3]] 
-#length of inter would be number of edges and would be labelled based on temp
-# j = [1,1,1,1,1,1]
-# omega = -40
-# rabif = [0,0,0,0,0,0,omega]
-# detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5])]
-# inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5]] 
-N1 = 5
+rabif = [0,0,0,0,0,0,omega]
+detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5])]
+inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5]] 
+
+# j = [1,1,1,1,1,1,1,1]
+# omega = -20
+# rabif = [0,0,0,0,0,0,0,0,omega]
+# detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*j[6], 2*j[7], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5]+j[6]+j[7])]
+# inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5], 4*j[6], 4*j[7]]
+
+N1 = 7
 # Initialize the resulting matrix as zero
 matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
 matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
@@ -79,71 +94,9 @@ for j in range(N1-1):
     matrix3 += inter[j]*result
 
 
-def get_H(time):
-        
-    time = time
-    j = [1,1,1,1]
-    omega = -40
-    rabif = [0,0,0,0,omega]
-    detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*(j[0]+j[1]+j[2]+j[3])]
-    inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3]] 
-    #length of inter would be number of edges and would be labelled based on temp
-    # j = [1,1,1,1,1,1]
-    # omega = -40
-    # rabif = [0,0,0,0,0,0,omega]
-    # detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5])]
-    # inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5]] 
-    N1 = 5
-    # Initialize the resulting matrix as zero
-    matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-
-    s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex128)
-    p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex128)
-    n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex128)
-
-    # Loop over all combinations
-    for j in range(N1):
-        matrices = []
-        for i in range(N1):
-            m = s if i == j else p
-            matrices.append(m)
-        result = reduce(torch.kron, matrices)
-        matrix += rabif[j] * result
-    # pdb.set_trace()
-
-    for j in range(N1):
-        matrices = []
-        for i in range(N1):
-            m = n if i == j else p
-            matrices.append(m)
-        result = reduce(torch.kron, matrices)
-        matrix2 += detun[j] * result
-
-    for j in range(N1-1):
-        matrices = []
-        for i in range(N1-1):
-            m=n if i==j else p
-            matrices.append(m)
-        matrices.append(n)    
-        result = reduce(torch.kron, matrices)
-        matrix3 += inter[j]*result
-
-    complex_const = -1j
-    ham = (complex_const * time)*(matrix - matrix2 + matrix3)
-    # pdb.set_trace()
-    # if ham.is_cuda:
-    #     ham = ham.cpu()
-    # ham_np = ham.numpy()
-    # time = 0.01
-    Uh = ham.matrix_exp()
-    return Uh
-
 def get_U(a,b,g):
     
-    N1 = 5
+    N1 = 7
     pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex128)
     identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex128)
     pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex128)
@@ -174,7 +127,7 @@ def get_U(a,b,g):
     return U
 
 def evolution(time, params,l):
-    N1 = 5
+    N1 = 7
     L = 4
     a = params[0]
     b = params[1]
@@ -199,30 +152,32 @@ def evolution(time, params,l):
         U1 = get_U(a[l][0],b[l][0],g[l][0])
         U2 = get_U(a[l][1],b[l][1],g[l][1])
         # pdb.set_trace()
-        U_result = torch.matmul(torch.matmul(U2, H), U1)
-        U_final = torch.matmul(U_result, U_final)
+        # U_result = torch.matmul(torch.matmul(U2, H), U1)
+        # U_final = torch.matmul(U_result, U_final)
+        U_final = torch.matmul(torch.matmul(torch.matmul(U2, H), U1), U_final)
     
     return U_final
 
 def expectation(state,time,params):
-    N1 = 5
+    N1 = 7
     # pdb.set_trace()
     L=4
-    state = state.reshape(4, 4)
-    state = torch.flatten(torch.kron(state, torch.tensor([1.,0.])))
+    # state = state.reshape(4, 4)
+    # state = torch.flatten(torch.kron(state, torch.tensor([1.,0.])))
+    state = (torch.kron(state, torch.tensor([1.,0.])))
     # for l in range(L):
     U = evolution(time,params,L)
-    state = U @ state
+    state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
-    exp0 = torch.sum(state_final[::2])
-    exp1 = torch.sum(state_final[1::2])
+    exp0 = torch.sum(state_final[::2], axis = 0)
+    exp1 = torch.sum(state_final[1::2], axis = 0)
     expectation = exp0 - exp1
     return state_final, expectation
 
 
 #####################  Import Data loader ###########################
 
-from z2states import Z2StateDataset, Z2DatasetLoader, Z3StateDataset, Z3DatasetLoader
+from z2states import Z2StateDataset, Z2DatasetLoader, Z3StateDataset, Z3DatasetLoader, DatasetLoader
 
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
@@ -251,11 +206,11 @@ class QuantumPerceptron(nn.Module):
         # self.layer2 = nn.Linear(hidden_size, output_size)
         # self.layer1 = nn.Linear(input_size, output_size)
         L = 4
-        N1 = 5
+        N1 = 7
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         b = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         g = torch.normal(mean=0.0, std=1., size=[L,2,N1])
-        self.params = nn.Parameter(torch.zeros_like(torch.stack((a,b,g))))
+        self.params = nn.Parameter((torch.stack((a,b,g))))
         self.params.requires_grad = True
 
         # self.params = nn.Parameter(torch.tensor([1.,0.,0.,0.,0.,0.,0.,0]))
@@ -282,7 +237,8 @@ class QuantumPerceptron(nn.Module):
     def forward(self, state):
         final_state = self.init_r(state)
         self.r = final_state.to(torch.float32)
-        self.r = self.r.reshape(1, -1)
+        self.r = self.r.T
+        # pdb.set_trace()
         # print(self.params)
         # self.r = state.to(torch.float32)
         # self.r = torch.tensor(r).to(torch.float32)
@@ -301,23 +257,27 @@ class QuantumPerceptron(nn.Module):
         # return out
 
 
-model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 144)
+model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
+# model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
 # params = torch.randn(8)  # initial 
 # Initialize parameters with Gaussian distribution centered at 0
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 # Set a seed for reproducibility
 torch.manual_seed(0)
 
 x = Z2DatasetLoader()
 y = Z3DatasetLoader()
+z = DatasetLoader()
 
 z2_dataset, z2_dataloader = x.return_dataset()
 z3_dataset, z3_dataloader = y.return_dataset()
 
-import pandas as pd
+dataset, dataloader = z.return_dataset()
+
+# import pandas as pd
 
 # Assume we have a DataLoader named 'dataloader'
 
@@ -328,33 +288,54 @@ eigenvectors = []
 vals = []
 
 
-for epoch in range(1000):
+for epoch in range(5):
     print("epoch:", epoch)
     try:
         losses = []
     
         model.train()
-        optimizer.zero_grad()
         total_loss = torch.tensor(0.0)
 
         # if epoch % 5 == 0:
             # pdb.set_trace()
 
         # for mfa, quant in tqdm(zip(mfa_dataloader, heisenberg_dataloader)):
-        for state, val in tqdm(z2_dataloader):
+        # for state, val in tqdm(z2_dataloader):
+        #     optimizer.zero_grad()
+        #     pred = model(state)
+        #     pred = pred.reshape(-1,)
+        #     loss = criterion(pred, val.float())
+        #     total_loss += loss
+        #     losses.append(loss.item())
+        #     loss.backward()
+        #     optimizer.step()
+            
+        # for state, val in tqdm(z3_dataloader):
+        #     optimizer.zero_grad()
+        #     pred = model(state)
+        #     pred = pred.reshape(-1,)
+        #     loss = criterion(pred, val.float())
+        #     total_loss += loss
+        #     losses.append(loss.item())
+        #     loss.backward()
+        #     optimizer.step()
+        
+        for state, val in tqdm(dataloader):
+            state = state.to(device)
+            val = val.to(device)
+            optimizer.zero_grad()
             pred = model(state)
+            pred = pred.reshape(-1,)
             loss = criterion(pred, val.float())
             total_loss += loss
-            losses.append(loss.item())
-            
-        for state, val in tqdm(z3_dataloader):
-            pred = model(state)
-            loss = criterion(pred, val.float())
-            total_loss += loss
-            losses.append(loss.item())
-            
+            # print(pred)
+            loss.backward()
+            optimizer.step()            
+
+
+        # total_loss.backward()
+        # optimizer.step()            
         print("Backward prop...")
-        total_loss.backward()
         print(total_loss)
 
         # for param in model.parameters():
@@ -372,13 +353,7 @@ for epoch in range(1000):
 
         # pdb.set_trace()
 
-        optimizer.step()
-        optimizer.zero_grad()
-
         # Clip the parameters to be within the bounds
-
-
-        
         model.eval()
 
     # We don't need to track gradients for validation, so wrap in 
@@ -391,26 +366,39 @@ for epoch in range(1000):
                 correct_predictions = 0
                 total_predictions = 0
 
-                print("Iterating through Heisenberg (for accuracy)...")    
-                for state, val in tqdm(z2_dataloader):
+                print("Iterating through all (for accuracy)...")    
+                # for state, val in tqdm(z2_dataloader):
+                #     pred = model(state)
+                #     # Convert predictions and true values to -1 or 1
+                #     pred_rounded = torch.where(pred < 0, -1, 1).reshape(-1,)
+                #     val_rounded = torch.where(val.float() > 0., 1, -1).reshape(-1,)
+                #     # pdb.set_trace()
+
+                #     # Count correct predictions
+                #     correct_predictions += torch.sum(pred_rounded == val_rounded).item()
+                #     total_predictions += len(val)
+
+                # print("Iterating through MFA (for accuracy)...")
+                # for state, val in tqdm(z3_dataloader):
+                #     pred = model(state)
+
+                #     # Convert predictions and true values to -1 or 1
+                #     pred_rounded = torch.where(pred < 0, -1, 1).reshape(-1,)
+                #     val_rounded = torch.where(val.float() > 0., 1, -1).reshape(-1,)
+
+                #     # Count correct predictions
+                #     correct_predictions += torch.sum(pred_rounded == val_rounded).item()
+
+                #     total_predictions += len(val)
+
+                for state, val in tqdm(dataloader):
+                    state = state.to(device)
+                    val = val.to(device)
                     pred = model(state)
-                    # Convert predictions and true values to -1 or 1
-                    pred_rounded = torch.where(pred < 0, -1, 1)
-                    val_rounded = torch.where(val.float() > 0., 1, -1)
-                    # pdb.set_trace()
-
-                    # Count correct predictions
-                    correct_predictions += torch.sum(pred_rounded == val_rounded).item()
-
-                    total_predictions += len(val)
-
-                print("Iterating through MFA (for accuracy)...")
-                for state, val in tqdm(z3_dataloader):
-                    pred = model(state)
 
                     # Convert predictions and true values to -1 or 1
-                    pred_rounded = torch.where(pred < 0, -1, 1)
-                    val_rounded = torch.where(val.float() > 0., 1, -1)
+                    pred_rounded = torch.where(pred < 0, -1, 1).reshape(-1,)
+                    val_rounded = torch.where(val.float() > 0., 1, -1).reshape(-1,)
 
                     # Count correct predictions
                     correct_predictions += torch.sum(pred_rounded == val_rounded).item()

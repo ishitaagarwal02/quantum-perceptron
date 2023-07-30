@@ -10,11 +10,12 @@ import numpy as np
 import random
 from torch.utils.data import Dataset, DataLoader
 
+D = 6
 
 # torch.manual_seed(0)
 def z1phase():
     
-    N1 = 4
+    N1 = D
     states00 = []
     states11 = []
     zero_state = torch.tensor([1, 0], dtype=torch.complex128)
@@ -50,7 +51,7 @@ def z1phase():
 
 def z2phase():
     
-    N1 = 4
+    N1 = D
     states10 = []
     states01 = []
     zero_state = torch.tensor([1, 0], dtype=torch.complex128)
@@ -61,13 +62,13 @@ def z2phase():
     for j in torch.arange(N1):
         r = torch.rand(1) * (1. - 0.7) + 0.7
         r = torch.tensor([r]) 
-        phi = 2 * torch.pi * torch.rand(1)
-        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
-        e_phi = torch.tensor(e_phi) 
+        # phi = 2 * torch.pi * torch.rand(1)
+        # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        # e_phi = torch.tensor(e_phi) 
         if j%2==0:
-            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*one_state
         else:
-            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*one_state
         matrix.append(s)
     
     states10 = reduce(torch.kron, matrix)
@@ -76,13 +77,13 @@ def z2phase():
     for j in torch.arange(N1):
         r = torch.rand(1) * (1. - 0.7) + 0.7
         r = torch.tensor([r]) 
-        phi = 2 * torch.pi * torch.rand(1)
-        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
-        e_phi = torch.tensor(e_phi) 
+        # phi = 2 * torch.pi * torch.rand(1)
+        # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        # e_phi = torch.tensor(e_phi) 
         if j%2==1:
-            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*one_state
         else:
-            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*one_state
         # pdb.set_trace()
         matrix.append(s)
         
@@ -90,7 +91,7 @@ def z2phase():
     return states10, states01
 
 def z3phase():
-    N1 = 4
+    N1 = D
     states100 = []
     states010 = []
     states001 = []
@@ -102,14 +103,14 @@ def z3phase():
     for j in torch.arange(N1):
         r = 0.3 * torch.rand(1)
         r = torch.tensor([r]) 
-        phi = 2 * torch.pi * torch.rand(1)
-        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
-        e_phi = torch.tensor(e_phi) 
+        # phi = 2 * torch.pi * torch.rand(1)
+        # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        # e_phi = torch.tensor(e_phi) 
         # print(r)
         if j%3==0:
-            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*one_state
         else:
-            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*one_state
         matrix.append(s)
     
     states100 = reduce(torch.kron, matrix)
@@ -120,13 +121,13 @@ def z3phase():
         r = 0.3 * torch.rand(1)
         # print(r)
         r = torch.tensor([r]) 
-        phi = 2 * torch.pi * torch.rand(1)
-        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
-        e_phi = torch.tensor(e_phi) 
+        # phi = 2 * torch.pi * torch.rand(1)
+        # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        # e_phi = torch.tensor(e_phi) 
         if j%3==1:
-            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*one_state
         else:
-            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*one_state
         # pdb.set_trace()
         matrix.append(s)
 
@@ -137,13 +138,13 @@ def z3phase():
     for j in torch.arange(N1):
         r = 0.3 * torch.rand(1)
         r = torch.tensor([r]) 
-        phi = 2 * torch.pi * torch.rand(1)
-        e_phi = torch.cos(phi) + 1j*torch.sin(phi)
-        e_phi = torch.tensor(e_phi) 
+        # phi = 2 * torch.pi * torch.rand(1)
+        # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
+        # e_phi = torch.tensor(e_phi) 
         if j%3==2:
-            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*e_phi*one_state
+            s = torch.sqrt(r)*zero_state + torch.sqrt(1-r)*one_state
         else:
-            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*e_phi*one_state
+            s = torch.sqrt(1-r)*zero_state + torch.sqrt(r)*one_state
         # pdb.set_trace()
         matrix.append(s)
         
@@ -184,17 +185,19 @@ class Z2StateDataset(Dataset):
 dataset_z2 = Z2StateDataset(z2state_list, z2label_list)
 
 # Create the dataloader
-dataloader_z2 = DataLoader(dataset_z2, batch_size=1, shuffle=False)
+dataloader_z2 = DataLoader(dataset_z2, batch_size=18, shuffle=False)
 
 class Z2DatasetLoader():
     def return_dataset(self):
         dataset = Z2StateDataset(z2state_list, z2label_list)
-        dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+        dataloader = DataLoader(dataset, batch_size=18, shuffle=False)
         return dataset, dataloader
     
 for states, labels in dataloader_z2:
     # pdb.set_trace()
     print(states, labels)
+
+
 
 
 z3state_list = []
@@ -224,10 +227,20 @@ dataset_z3 = Z3StateDataset(z3state_list, z3label_list)
 class Z3DatasetLoader():
     def return_dataset(self):
         dataset = Z3StateDataset(z3state_list, z3label_list)
-        dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+        dataloader = DataLoader(dataset, batch_size=18, shuffle=True)
         return dataset, dataloader
 
 # Create the dataloader
-dataloader_z3 = DataLoader(dataset_z3, batch_size=1, shuffle=False)
+dataloader_z3 = DataLoader(dataset_z3, batch_size=18, shuffle=True)
 for states, labels in dataloader_z3:
     print(states, labels)
+
+
+from torch.utils.data import ConcatDataset
+
+dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
+dataloader_combined = DataLoader(dataset_combined, batch_size=2, shuffle=True)
+
+class DatasetLoader():
+    def return_dataset(self):
+        return dataset_combined, dataloader_combined
