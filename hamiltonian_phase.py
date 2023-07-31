@@ -2,7 +2,7 @@ import torch
 from functools import reduce
 # from scipy.linalg import expm
 # import scipy.sparse as sparse
-import scipy.linalg
+# import scipy.linalg
 import numpy as np
 # from scipy.sparse.linalg import expm_multiply
 # from graph import unit_disk_grid_graph
