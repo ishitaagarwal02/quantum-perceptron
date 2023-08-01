@@ -10,7 +10,7 @@ import numpy as np
 import random
 from torch.utils.data import Dataset, DataLoader
 
-D = 6
+D = 8
 
 # torch.manual_seed(0)
 def z1phase():
@@ -239,7 +239,7 @@ for states, labels in dataloader_z3:
 from torch.utils.data import ConcatDataset
 
 dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
-dataloader_combined = DataLoader(dataset_combined, batch_size=2, shuffle=True)
+dataloader_combined = DataLoader(dataset_combined, batch_size=1, shuffle=True)
 
 class DatasetLoader():
     def return_dataset(self):

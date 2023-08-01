@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore")
 # vec1 = np.abs(np.dot(U, vec0)) ** 2
 
 # print(vec1)
-# device = "cuda:0"
+device = "cuda:0"
 
 from torch.utils.data import Dataset, DataLoader
 import pdb
@@ -257,8 +257,8 @@ class QuantumPerceptron(nn.Module):
         # return out
 
 
-# model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
-model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
+model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
+# model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
@@ -297,8 +297,8 @@ for epoch in range(5):
         total_loss = torch.tensor(0.0)
 
         for state, val in tqdm(dataloader):
-            # state = state.to(device)
-            # val = val.to(device)
+            state = state.to(device)
+            val = val.to(device)
             optimizer.zero_grad()
             pred = model(state)
             pred = pred.reshape(-1,)
@@ -333,8 +333,8 @@ for epoch in range(5):
                 print("Iterating through all (for accuracy)...")    
 
                 for state, val in tqdm(dataloader):
-                    # state = state.to(device)
-                    # val = val.to(device)
+                    state = state.to(device)
+                    val = val.to(device)
                     pred = model(state)
 
                     # Convert predictions and true values to -1 or 1
