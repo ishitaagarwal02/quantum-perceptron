@@ -10,7 +10,7 @@ import numpy as np
 import random
 from torch.utils.data import Dataset, DataLoader
 
-D = 10
+D = 9
 
 # torch.manual_seed(0)
 def z1phase():

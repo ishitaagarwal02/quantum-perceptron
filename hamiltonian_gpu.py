@@ -50,13 +50,13 @@ complex_const = -1j
 # detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*j[6], 2*j[7], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5]+j[6]+j[7])]
 # inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5], 4*j[6], 4*j[7]]
 
-j = [1,1,1,1,1,1,1,1,1,1]
+j = [1,1,1,1,1,1,1,1,1]
 omega = -20
-rabif = [0,0,0,0,0,0,0,0,0,0,omega]
-detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*j[6], 2*j[7], 2*j[8], 2*j[9], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5]+j[6]+j[7]+j[8]+j[9])]
-inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5], 4*j[6], 4*j[7], 4*j[8], 4*j[9]]
+rabif = [0,0,0,0,0,0,0,0,0,omega]
+detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*j[6], 2*j[7], 2*j[8], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5]+j[6]+j[7]+j[8])]
+inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5], 4*j[6], 4*j[7], 4*j[8]]
 
-N1 = 11
+N1 = 10
 # Initialize the resulting matrix as zero
 matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
 matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
@@ -108,7 +108,7 @@ for j in range(N1-1):
 
 def get_U(a,b,g):
     
-    N1 = 11
+    N1 = 10
     pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex128)
     identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex128)
     pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex128)
@@ -149,7 +149,7 @@ def get_U(a,b,g):
     return U
 
 def evolution(time, params,l):
-    N1 = 11
+    N1 = 10
     L = 4
     a = params[0]
     b = params[1]
@@ -185,7 +185,7 @@ def evolution(time, params,l):
     return U_final
 
 def expectation(state,time,params):
-    N1 = 11
+    N1 = 10
     # pdb.set_trace()
     L = 4
     # state = state.reshape(4, 4)
@@ -233,7 +233,7 @@ class QuantumPerceptron(nn.Module):
         # self.layer2 = nn.Linear(hidden_size, output_size)
         # self.layer1 = nn.Linear(input_size, output_size)
         L = 4
-        N1 = 11
+        N1 = 10
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         b = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         g = torch.normal(mean=0.0, std=1., size=[L,2,N1])
