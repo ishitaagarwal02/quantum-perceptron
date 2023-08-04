@@ -58,6 +58,8 @@ u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
 u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
 u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
 U = torch.eye(2**N1, dtype=torch.complex128)
+U1 = torch.eye(2**N1, dtype=torch.complex128)
+
 
 # a = [1.,1.,1.,1.,1.]
 # b = [2.,2.,2.,2.,2.]
@@ -75,12 +77,17 @@ for i in range(N1):
         px.append(x)
     result_z = reduce(torch.kron, pz)
     result_x = reduce(torch.kron, px)
-    u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
-    u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
-    u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
+    # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
+    # u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
+    # u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
+    # U1 = u3 * u2 * u1 * U1
+    u1 = torch.cos(torch.tensor(a[i]))*torch.eye(2**N1) - 1j *torch.sin(torch.tensor(a[i]))*result_z
+    u2 = torch.cos(torch.tensor(b[i]))*torch.eye(2**N1) - 1j *torch.sin(torch.tensor(b[i]))*result_x
+    u3 = torch.cos(torch.tensor(g[i]))*torch.eye(2**N1) - 1j *torch.sin(torch.tensor(g[i]))*result_z
     U = u3 * u2 * u1 * U
-    print(U)
+    # print(U)
 
+print(U1)
 print(U)
 
 
