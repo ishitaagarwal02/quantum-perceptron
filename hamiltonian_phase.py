@@ -54,6 +54,7 @@ ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
 s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex128)
 p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex128)
 n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex128)
+print("")
 
 # Loop over all combinations
 for j in range(N1):
