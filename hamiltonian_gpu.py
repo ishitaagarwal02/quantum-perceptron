@@ -84,6 +84,7 @@ for j in range(N1):
     result = reduce(torch.kron, matrices)
     # matrix += rabif[j] * result
     matrix.add_(rabif[j] * result)
+    del result
 # pdb.set_trace()
 
 for j in range(N1):
@@ -94,6 +95,7 @@ for j in range(N1):
     result = reduce(torch.kron, matrices)
     # matrix2 += detun[j] * result
     matrix2.add_(detun[j] * result)
+    del result
 
 for j in range(N1-1):
     matrices = []
@@ -104,6 +106,7 @@ for j in range(N1-1):
     result = reduce(torch.kron, matrices)
     # matrix3 += inter[j]*result
     matrix3.add_(inter[j] * result)
+    del result
 
 
 def get_U(a,b,g):
@@ -134,6 +137,8 @@ def get_U(a,b,g):
         result_x = reduce(torch.kron, px)
         result_z = result_z.to(device)
         result_x = result_x.to(device)
+        del px
+        del pz
         # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
         # u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
         # u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
@@ -143,7 +148,12 @@ def get_U(a,b,g):
         u1 = u1.to(device)
         u2 = u2.to(device)
         u3 = u3.to(device)
+        del result_x
+        del result_z
         U = u3 @ u2 @ u1 @ U
+        del u1
+        del u2
+        del u3
         # U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))
 
     return U
@@ -181,6 +191,8 @@ def evolution(time, params,l):
         # U_result = torch.matmul(torch.matmul(U2, H), U1)
         # U_final = torch.matmul(U_result, U_final)
         U_final = torch.matmul(torch.matmul(torch.matmul(U2, H), U1), U_final)
+        del U1
+        del U2
     
     return U_final
 
@@ -196,6 +208,7 @@ def expectation(state,time,params):
     U = evolution(time,params,L)
     state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
+    del state
     exp0 = torch.sum(state_final[::2], axis = 0)
     exp1 = torch.sum(state_final[1::2], axis = 0)
     expectation = exp0 - exp1

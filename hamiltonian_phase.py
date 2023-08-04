@@ -4,11 +4,11 @@ import numpy as np
 import numpy as np
 from tqdm import tqdm
 import warnings
-
+# from memory_profiler import profile
 warnings.filterwarnings("ignore")
+import tracemalloc
 
-
-
+# @profile
 # print(ham)
 # vec0 = np.zeros(2**N1)
 # vec0[0] = 1
@@ -29,20 +29,13 @@ import pdb
 
 complex_const = -1j
 
+tracemalloc.start()
 
-j = [1,1,1,1]
+j = [1,1,1,1,1]
 omega = -20
-rabif = [0,0,0,0,omega]
-detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*(j[0]+j[1]+j[2]+j[3])]
-inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3]] 
-# #length of inter would be number of edges and would be labelled based on temp
-
-
-# j = [1,1,1,1,1,1]
-# omega = -20
-# rabif = [0,0,0,0,0,0,omega]
-# detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5])]
-# inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5]] 
+rabif = [0,0,0,0,0,omega]
+detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*(j[0]+j[1]+j[2]+j[3]+j[4])]
+inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4]] 
 
 # j = [1,1,1,1,1,1,1,1]
 # omega = -20
@@ -50,13 +43,8 @@ inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3]]
 # detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*j[6], 2*j[7], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5]+j[6]+j[7])]
 # inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5], 4*j[6], 4*j[7]]
 
-# j = [1,1,1,1,1,1,1,1,1,1]
-# omega = -20
-# rabif = [0,0,0,0,0,0,0,0,0,0,omega]
-# detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*j[6], 2*j[7], 2*j[8], 2*j[9], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5]+j[6]+j[7]+j[8]+j[9])]
-# inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5], 4*j[6], 4*j[7], 4*j[8], 4*j[9]]
 
-N1 = 5
+N1 = 6
 # Initialize the resulting matrix as zero
 matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
 matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
@@ -76,6 +64,7 @@ for j in range(N1):
     result = reduce(torch.kron, matrices)
     # matrix += rabif[j] * result
     matrix.add_(rabif[j] * result)
+    del result
 # pdb.set_trace()
 
 for j in range(N1):
@@ -86,6 +75,7 @@ for j in range(N1):
     result = reduce(torch.kron, matrices)
     # matrix2 += detun[j] * result
     matrix2.add_(detun[j] * result)
+    del result
 
 for j in range(N1-1):
     matrices = []
@@ -96,11 +86,12 @@ for j in range(N1-1):
     result = reduce(torch.kron, matrices)
     # matrix3 += inter[j]*result
     matrix3.add_(inter[j] * result)
+    del result
 
 
 def get_U(a,b,g):
     
-    N1 = 5
+    N1 = 6
     pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex128)
     identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex128)
     pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex128)
@@ -120,20 +111,30 @@ def get_U(a,b,g):
             px.append(x)
         result_z = reduce(torch.kron, pz)
         result_x = reduce(torch.kron, px)
+        del pz
+        del px
         # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
         # u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
         # u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
-        # u1 = torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z
-        # u2 = torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x
-        # u3 = torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z
-        # U = u3 @ u2 @ u1 @ U
-        U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))
+        u1 = torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z
+        u2 = torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x
+        u3 = torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z
+        U = u3 @ u2 @ u1 @ U
+        del u1
+        del u2
+        del u3
+        del result_x
+        del result_z
+        # pdb.set_trace()
+       
+        # U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))
+        
 
     return U
 
 def evolution(time, params,l):
-    N1 = 5
-    L = 1
+    N1 = 6
+    L = 4
     a = params[0]
     b = params[1]
     g = params[2]
@@ -160,13 +161,13 @@ def evolution(time, params,l):
         # U_result = torch.matmul(torch.matmul(U2, H), U1)
         # U_final = torch.matmul(U_result, U_final)
         U_final = torch.matmul(torch.matmul(torch.matmul(U2, H), U1), U_final)
-    
+
     return U_final
 
 def expectation(state,time,params):
-    N1 = 5
+    N1 = 6
     # pdb.set_trace()
-    L = 1
+    L = 4
     # state = state.reshape(4, 4)
     # state = torch.flatten(torch.kron(state, torch.tensor([1.,0.])))
     # state = state.to(device)
@@ -211,8 +212,8 @@ class QuantumPerceptron(nn.Module):
         #     self.mid_layers.append(nn.Linear(hidden_size, hidden_size))
         # self.layer2 = nn.Linear(hidden_size, output_size)
         # self.layer1 = nn.Linear(input_size, output_size)
-        L = 1
-        N1 = 5
+        L = 4
+        N1 = 6
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         b = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         g = torch.normal(mean=0.0, std=1., size=[L,2,N1])
@@ -358,7 +359,7 @@ for epoch in range(5):
     except KeyboardInterrupt:
         pdb.set_trace()
         continue
-
+tracemalloc.stop()
 # pdb.set_trace()
 file_path = './quantumPercPhase2.pth'
 torch.save(model.state_dict(),file_path)
