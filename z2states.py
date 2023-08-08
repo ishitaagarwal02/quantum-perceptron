@@ -9,9 +9,10 @@ import numpy as np
 import numpy as np
 import random
 from torch.utils.data import Dataset, DataLoader
+import tracemalloc
 
-D = 9
-
+D = 6
+tracemalloc.start()
 # torch.manual_seed(0)
 def z1phase():
     
@@ -171,6 +172,7 @@ for i in torch.arange(9):
     z2label_list.append(torch.tensor(-1.))  # Adding label -1 for each state
     z2label_list.append(torch.tensor(-1.))
 
+# print(tracemalloc.get_traced_memory())
 class Z2StateDataset(Dataset):
     def __init__(self, z2state_list, z2label_list):
         self.state_list = z2state_list
@@ -197,7 +199,7 @@ for states, labels in dataloader_z2:
     # pdb.set_trace()
     print(states, labels)
 
-
+# print(tracemalloc.get_traced_memory())
 
 
 z3state_list = []
@@ -235,6 +237,7 @@ dataloader_z3 = DataLoader(dataset_z3, batch_size=18, shuffle=True)
 for states, labels in dataloader_z3:
     print(states, labels)
 
+# print(tracemalloc.get_traced_memory())
 
 from torch.utils.data import ConcatDataset
 
@@ -244,3 +247,13 @@ dataloader_combined = DataLoader(dataset_combined, batch_size=1, shuffle=True)
 class DatasetLoader():
     def return_dataset(self):
         return dataset_combined, dataloader_combined
+# print(tracemalloc.get_traced_memory())
+
+# snapshot = tracemalloc.take_snapshot()
+# top_stats = snapshot.statistics('lineno')
+
+# print("[ Top 10 ]")
+# for stat in top_stats[:10]:
+#     print(stat)
+    
+tracemalloc.stop()
