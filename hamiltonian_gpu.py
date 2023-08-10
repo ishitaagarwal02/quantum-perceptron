@@ -113,7 +113,7 @@ def get_U(a,b,g):
         u1 = torch.cos((a[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((a[i]))*result_z
         u2 = torch.cos((b[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((b[i]))*result_x
         u3 = torch.cos((g[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((g[i]))*result_z
-        
+
         u1 = u1.to(device)
         u2 = u2.to(device)
         u3 = u3.to(device)
@@ -299,7 +299,7 @@ eigenvectors = []
 vals = []
 
 
-for epoch in range(5):
+for epoch in range(500):
     print("epoch:", epoch)
     try:
         losses = []
