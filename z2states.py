@@ -11,7 +11,7 @@ import random
 from torch.utils.data import Dataset, DataLoader
 import tracemalloc
 
-D = 6
+D = 9
 tracemalloc.start()
 # torch.manual_seed(0)
 def z1phase():
@@ -19,8 +19,8 @@ def z1phase():
     N1 = D
     states00 = []
     states11 = []
-    zero_state = torch.tensor([1, 0], dtype=torch.complex128)
-    one_state = torch.tensor([0, 1], dtype=torch.complex128)
+    zero_state = torch.tensor([1, 0], dtype=torch.complex64)
+    one_state = torch.tensor([0, 1], dtype=torch.complex64)
     matrix = []
     # for i in torch.arange(15):
         # generate 0000 type states
@@ -55,8 +55,8 @@ def z2phase():
     N1 = D
     states10 = []
     states01 = []
-    zero_state = torch.tensor([1, 0], dtype=torch.complex128)
-    one_state = torch.tensor([0, 1], dtype=torch.complex128)
+    zero_state = torch.tensor([1, 0], dtype=torch.complex64)
+    one_state = torch.tensor([0, 1], dtype=torch.complex64)
     matrix = []
     # for i in torch.arange(15):
         # generate 0101 type states
@@ -96,8 +96,8 @@ def z3phase():
     states100 = []
     states010 = []
     states001 = []
-    zero_state = torch.tensor([1, 0], dtype=torch.complex128)
-    one_state = torch.tensor([0, 1], dtype=torch.complex128)
+    zero_state = torch.tensor([1, 0], dtype=torch.complex64)
+    one_state = torch.tensor([0, 1], dtype=torch.complex64)
     matrix = []
     # for i in torch.arange(15):
     # generate 001 type states

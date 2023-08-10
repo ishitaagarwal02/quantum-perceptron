@@ -7,17 +7,16 @@ import warnings
 # from memory_profiler import profile
 import gc
 warnings.filterwarnings("ignore")
-import tracemalloc
 from torch.utils.data import Dataset, DataLoader
 import pdb
 
 complex_const = -1j
 
 N = 7
-L1 = 4
+L1 = 1
 
 N1 = N
-j = [1,1,1,1,1,1]
+j = [1] * (N1-1)
 omega = -20
 rabif =  [0] * (N1 - 1) + [omega]
 detun = [2 * val for val in j] + [2 * sum(j)]
@@ -26,14 +25,14 @@ inter = [4 * val for val in j]
 
 N1 = N
 # Initialize the resulting matrix as zero
-matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
+matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 
-s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex128)
-p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex128)
-n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex128)
+s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64)
+p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex64)
+n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex64)
 print("")
 
 # Loop over all combinations
@@ -68,19 +67,19 @@ for j in range(N1-1):
     # matrix3 += inter[j]*result
     matrix3.add_(inter[j] * result)
     del result
-
+# @profile
 def get_U(a,b,g):
     
     gc.collect()
     N1 = N
-    pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex128)
-    identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex128)
-    pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex128)
+    pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex64)
+    identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex64)
+    pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex64)
 
-    # u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    # u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    # u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    U = torch.eye(2**N1, dtype=torch.complex128)
+    # u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+    # u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+    # u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+    U = torch.eye(2**N1, dtype=torch.complex64)
 
     for i in range(N1):
         pz = []
@@ -112,7 +111,7 @@ def get_U(a,b,g):
         
 
     return U
-
+# @profile
 def evolution(time, params,l):
 
     gc.collect()
@@ -131,14 +130,13 @@ def evolution(time, params,l):
     H = ham.matrix_exp()
     # H = get_H(time)
 
-    U_final = torch.eye(2**N1, dtype=torch.complex128)
-
-    for l in range(L):
+    U_final = torch.eye(2**N1, dtype=torch.complex64)
+    for l in range(L)[:2]:        
         U1 = get_U(a[l][0],b[l][0],g[l][0])
         U2 = get_U(a[l][1],b[l][1],g[l][1])
         U_final = torch.matmul(torch.matmul(torch.matmul(U2, H), U1), U_final)
-        U1 = None
-        U2 = None
+        del U1
+        del U2
 
     return U_final
 # @profile
@@ -151,11 +149,13 @@ def expectation(state,time,params):
     U = evolution(time,params,L)
     # pdb.set_trace()
     state = U @ state.view(-1,state.size()[0])
+    del U
     state_final = torch.abs(state) ** 2
     exp0 = torch.sum(state_final[::2], axis = 0)
     exp1 = torch.sum(state_final[1::2], axis = 0)
-    expectation = exp0 - exp1
-    return state_final, expectation
+    del state_final
+    expt = exp0 - exp1
+    return expt
 
 
 #####################  Import Data loader ###########################
@@ -195,7 +195,7 @@ class QuantumPerceptron(nn.Module):
     def init_r(self, state):
         self.r = []
         for t in torch.arange(0.1,1.,0.2):
-            state_final, expectations = expectation(state, t, self.params)
+            expectations = expectation(state, t, self.params)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
         self.r = torch.stack(self.r)
@@ -257,7 +257,6 @@ for epoch in range(2):
         # optimizer.step()            
         print("Backward prop...")
         print(total_loss)
-        print(tracemalloc.get_traced_memory())
 
         # for param in model.parameters():
         #     param.data.clamp_(0, 2*torch.pi)
@@ -293,13 +292,10 @@ for epoch in range(2):
 
                 accuracy = correct_predictions / total_predictions
                 print(f'Accuracy: {accuracy}')
-                print(tracemalloc.get_traced_memory())
 
     except KeyboardInterrupt:
         pdb.set_trace()
         continue
-print(tracemalloc.get_traced_memory())
-tracemalloc.stop()
 # pdb.set_trace()
 file_path = './quantumPercPhase2.pth'
 torch.save(model.state_dict(),file_path)

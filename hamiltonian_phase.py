@@ -31,30 +31,25 @@ complex_const = -1j
 
 tracemalloc.start()
 
-# j = [1,1,1,1,1,1,1]
-# omega = -20
-# rabif = [0,0,0,0,0,0,0,omega]
-# detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*j[6], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5]+j[6])]
-# inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5], 4*j[6]] 
+N = 10
+L1 = 1
 
-j = [1,1,1,1,1,1,1,1,1]
+N1 = N
+j = [1] * (N1-1)
 omega = -20
-rabif = [0,0,0,0,0,0,0,0,0,omega]
-detun = [2*j[0], 2*j[1], 2*j[2], 2*j[3], 2*j[4], 2*j[5], 2*j[6], 2*j[7], 2*j[8], 2*(j[0]+j[1]+j[2]+j[3]+j[4]+j[5]+j[6]+j[7]+j[8])]
-inter = [4*j[0], 4*j[1], 4*j[2], 4*j[3], 4*j[4], 4*j[5], 4*j[6], 4*j[7], 4*j[8]]
+rabif =  [0] * (N1 - 1) + [omega]
+detun = [2 * val for val in j] + [2 * sum(j)]
+inter = [4 * val for val in j]
 
-
-N1 = 10
 # Initialize the resulting matrix as zero
-matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
+matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 
-s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex128)
-p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex128)
-n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex128)
-print("")
+s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64)
+p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex64)
+n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex64)
 
 # Loop over all combinations
 for j in range(N1):
@@ -92,15 +87,15 @@ for j in range(N1-1):
 
 def get_U(a,b,g):
     
-    N1 = 10
-    pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex128)
-    identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex128)
-    pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex128)
+    N1 = N
+    pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex64)
+    identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex64)
+    pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex64)
 
-    # u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    # u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    # u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex128)
-    U = torch.eye(2**N1, dtype=torch.complex128)
+    # u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+    # u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+    # u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+    U = torch.eye(2**N1, dtype=torch.complex64)
 
     for i in range(N1):
         pz = []
@@ -135,53 +130,41 @@ def get_U(a,b,g):
     return U
 
 def evolution(time, params,l):
-    N1 = 10
-    L = 4
+    N1 = N
+    L = L1
     a = params[0]
     b = params[1]
     g = params[2]
     complex_const = -1j
     ham = (complex_const * time)*(matrix - matrix2 + matrix3)
-    # pdb.set_trace()
-    # if ham.is_cuda:
-    #     ham = ham.cpu()
-    # ham_np = ham.numpy()
-    # time = 0.01
     H = ham.matrix_exp()
     # H = get_H(time)
 
-    U_final = torch.eye(2**N1, dtype=torch.complex128)
-    # U1 = get_U(a[l][0],b[l][0],g[l][0])
-    # U2 = get_U(a[l][1],b[l][1],g[l][1])
-    # pdb.set_trace()
-    # U_result = torch.matmul(torch.matmul(U2, H), U1)
-    # U_final = torch.matmul(U_result, U_final)
+    U_final = torch.eye(2**N1, dtype=torch.complex64)
     for l in range(L):
         U1 = get_U(a[l][0],b[l][0],g[l][0])
         U2 = get_U(a[l][1],b[l][1],g[l][1])
-        # pdb.set_trace()
-        # U_result = torch.matmul(torch.matmul(U2, H), U1)
-        # U_final = torch.matmul(U_result, U_final)
         U_final = torch.matmul(torch.matmul(torch.matmul(U2, H), U1), U_final)
+        del U1
+        del U2
 
     return U_final
 
 def expectation(state,time,params):
-    N1 = 10
-    # pdb.set_trace()
-    L = 4
-    # state = state.reshape(4, 4)
-    # state = torch.flatten(torch.kron(state, torch.tensor([1.,0.])))
-    # state = state.to(device)
+
+    L = L1
     state = (torch.kron(state, torch.tensor([1.,0.])))
-    # for l in range(L):
     U = evolution(time,params,L)
     state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
+    del state_final
+    del U
     exp0 = torch.sum(state_final[::2], axis = 0)
     exp1 = torch.sum(state_final[1::2], axis = 0)
-    expectation = exp0 - exp1
-    return state_final, expectation
+    expt = exp0 - exp1
+    del exp0
+    del exp1
+    return expt
 
 
 #####################  Import Data loader ###########################
@@ -209,8 +192,9 @@ class QuantumPerceptron(nn.Module):
         #     self.mid_layers.append(nn.Linear(hidden_size, hidden_size))
         # self.layer2 = nn.Linear(hidden_size, output_size)
         # self.layer1 = nn.Linear(input_size, output_size)
-        L = 4
-        N1 = 10
+        L = L1
+        N1 = N
+
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         b = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         g = torch.normal(mean=0.0, std=1., size=[L,2,N1])
@@ -221,40 +205,18 @@ class QuantumPerceptron(nn.Module):
 
     def init_r(self, state):
         self.r = []
-        for t in torch.arange(0.1,1.,0.1):
-            state_final, expectations = expectation(state, t, self.params)
+        for t in torch.arange(0.1,1.,0.2):
+            expectations = expectation(state, t, self.params)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
         self.r = torch.stack(self.r)
         return self.r
-    
-    # def evolve(self, state):
-    #     self.r = []
-    #     for t in torch.arange(0.01,0.1,0.02):
-    #         state_final, expectations = expectation(state, t, self.params)
-    #         # self.r.append(state_final)
-    #         self.r = state_final
-    #     # self.r.append(torch.tensor(1.).to(torch.float32))
-    #     # self.r = torch.stack(self.r)
-    #     return self.r
 
     def forward(self, state):
         final_state = self.init_r(state)
         self.r = final_state.to(torch.float32)
         self.r = self.r.T
-        # pdb.set_trace()
-        # print(self.params)
-        # self.r = state.to(torch.float32)
-        # self.r = torch.tensor(r).to(torch.float32)
-        # state = torch.tensor(state).reshape(1,16)
-        # self.r = state.to(torch.float32)
-        # print(self.r)
         out = self.layer1(self.r)
-        # out = F.gelu(out)
-        # for layer in self.mid_layers:
-        #     out = layer(out)
-        #     out = F.gelu(out)
-        # out = self.layer2(out)
         out = F.tanh(out)
         # return return_energy(out)
         return out
@@ -262,14 +224,11 @@ class QuantumPerceptron(nn.Module):
 
 
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
-model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
+model = QuantumPerceptron(input_size= 5, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
-# params = torch.randn(8)  # initial 
-# Initialize parameters with Gaussian distribution centered at 0
-# import matplotlib.pyplot as plt
-# Set a seed for reproducibility
+
 torch.manual_seed(0)
 
 x = Z2DatasetLoader()
