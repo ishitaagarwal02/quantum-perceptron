@@ -176,9 +176,9 @@ def expectation(state,time,params):
     exp0 = torch.sum(state_final[::2], axis = 0)
     exp1 = torch.sum(state_final[1::2], axis = 0)
     del state_final
+    expt = exp0 - exp1
     del exp0
     del exp1
-    expt = exp0 - exp1
     return expt
 
 
