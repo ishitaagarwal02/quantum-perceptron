@@ -11,7 +11,7 @@ import random
 from torch.utils.data import Dataset, DataLoader
 import tracemalloc
 
-D = 9
+D = 8
 tracemalloc.start()
 # torch.manual_seed(0)
 def z1phase():

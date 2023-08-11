@@ -16,7 +16,7 @@ import pdb
 complex_const = -1j
 
 
-N = 10
+N = 9
 L1 = 4
 
 N1 = N
@@ -110,21 +110,22 @@ def get_U(a,b,g):
         # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
         # u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
         # u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
-        u1 = torch.cos((a[i]))*iden - 1j *torch.sin((a[i]))*result_z
-        u2 = torch.cos((b[i]))*iden - 1j *torch.sin((b[i]))*result_x
-        u3 = torch.cos((g[i]))*iden - 1j *torch.sin((g[i]))*result_z
+        print("Ident : " ,iden)
+        # u1 = torch.cos((a[i]))*iden - 1j *torch.sin((a[i]))*result_z
+        # u2 = torch.cos((b[i]))*iden - 1j *torch.sin((b[i]))*result_x
+        # u3 = torch.cos((g[i]))*iden - 1j *torch.sin((g[i]))*result_z
 
-        u1 = u1.to(device)
-        u2 = u2.to(device)
-        u3 = u3.to(device)
-        del result_x
-        del result_z
-        U = u3 @ u2 @ u1 @ U
-        del u1
-        del u2
-        del u3
-        del iden
-        # U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))
+        # u1 = u1.to(device)
+        # u2 = u2.to(device)
+        # u3 = u3.to(device)
+        # del result_x 
+        # del result_z
+        # # U = u3 @ u2 @ u1 @ U
+        # del u1
+        # del u2
+        # del u3
+        # del iden
+        U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))
 
     return U
 
