@@ -110,7 +110,6 @@ def get_U(a,b,g):
         # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
         # u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
         # u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
-        print("Ident : " ,iden)
         # u1 = torch.cos((a[i]))*iden - 1j *torch.sin((a[i]))*result_z
         # u2 = torch.cos((b[i]))*iden - 1j *torch.sin((b[i]))*result_x
         # u3 = torch.cos((g[i]))*iden - 1j *torch.sin((g[i]))*result_z
