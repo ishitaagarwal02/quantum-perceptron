@@ -1,4 +1,5 @@
 import torch
+torch.cuda.empty_cache()
 from functools import reduce
 import numpy as np
 import numpy as np
@@ -97,7 +98,7 @@ def get_U(a,b,g):
     for i in range(N1):
         pz = [pauli_z if j == i else identity for j in range(N1)]
         px = [pauli_x if j == i else identity for j in range(N1)]
-        
+
         result_z = reduce(torch.kron, pz)
         result_x = reduce(torch.kron, px)
         result_z = result_z.to(device)
@@ -120,6 +121,7 @@ def get_U(a,b,g):
         del u1
         del u2
         del u3
+        del iden
         # U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))
 
     return U
