@@ -76,35 +76,31 @@ def get_U(a,b,g):
     identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex64)
     pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex64)
 
-    # u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
-    # u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
-    # u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
     U = torch.eye(2**N1, dtype=torch.complex64)
+    iden = torch.eye(2**N1, dtype=torch.complex64)
 
     for i in range(N1):
-        pz = []
-        px = []
-        for j in range(N1):
-            z = pauli_z if j == i else identity
-            x = pauli_x if j == i else identity
-            pz.append(z)
-            px.append(x)
+        pz = [pauli_z if j == i else identity for j in range(N1)]
+        px = [pauli_x if j == i else identity for j in range(N1)]
+
         result_z = reduce(torch.kron, pz)
         result_x = reduce(torch.kron, px)
+
         del pz
         del px
         # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
         # u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
         # u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
-        u1 = torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z
-        u2 = torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x
-        u3 = torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z
+        u1 = torch.cos((a[i]))*iden - 1j *torch.sin((a[i]))*result_z
+        u2 = torch.cos((b[i]))*iden - 1j *torch.sin((b[i]))*result_x
+        u3 = torch.cos((g[i]))*iden - 1j *torch.sin((g[i]))*result_z
         U = u3 @ u2 @ u1 @ U
         del u1
         del u2
         del u3
         del result_x
         del result_z
+        gc.collect()
         # pdb.set_trace()
        
         # U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))

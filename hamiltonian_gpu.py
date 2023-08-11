@@ -92,15 +92,12 @@ def get_U(a,b,g):
     # u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
     U = torch.eye(2**N1, dtype=torch.complex64)
     U = U.to(device)
+    iden = torch.eye(2**N1).to(device)
 
     for i in range(N1):
-        pz = []
-        px = []
-        for j in range(N1):
-            z = pauli_z if j == i else identity
-            x = pauli_x if j == i else identity
-            pz.append(z)
-            px.append(x)
+        pz = [pauli_z if j == i else identity for j in range(N1)]
+        px = [pauli_x if j == i else identity for j in range(N1)]
+        
         result_z = reduce(torch.kron, pz)
         result_x = reduce(torch.kron, px)
         result_z = result_z.to(device)
@@ -110,9 +107,9 @@ def get_U(a,b,g):
         # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
         # u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
         # u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
-        u1 = torch.cos((a[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((a[i]))*result_z
-        u2 = torch.cos((b[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((b[i]))*result_x
-        u3 = torch.cos((g[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((g[i]))*result_z
+        u1 = torch.cos((a[i]))*iden - 1j *torch.sin((a[i]))*result_z
+        u2 = torch.cos((b[i]))*iden - 1j *torch.sin((b[i]))*result_x
+        u3 = torch.cos((g[i]))*iden - 1j *torch.sin((g[i]))*result_z
 
         u1 = u1.to(device)
         u2 = u2.to(device)
