@@ -84,16 +84,18 @@ def get_U(a,b,g):
     pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex64)
     identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex64)
     pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex64)
+    iden = torch.eye(2**N1, dtype=torch.complex64)
     pauli_x = pauli_x.to(device)
     identity = identity.to(device)
     pauli_z = pauli_z.to(device)
+    iden = iden.to(device)
 
     # u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
     # u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
     # u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
     U = torch.eye(2**N1, dtype=torch.complex64)
     U = U.to(device)
-    iden = torch.eye(2**N1).to(device)
+    # iden = torch.eye(2**N1).to(device)
 
     for i in range(N1):
         pz = [pauli_z if j == i else identity for j in range(N1)]
