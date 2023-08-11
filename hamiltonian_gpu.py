@@ -125,7 +125,7 @@ def get_U(a,b,g):
         # del u2
         # del u3
         # del iden
-        U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))
+        U = torch.matmul((torch.cos((g[i]))*iden - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*iden - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*iden - 1j *torch.sin((a[i]))*result_z),U)))
 
     return U
 
