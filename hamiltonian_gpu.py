@@ -87,7 +87,6 @@ def get_U(a,b,g):
     pauli_x = pauli_x.to(device)
     identity = identity.to(device)
     pauli_z = pauli_z.to(device)
-    iden = iden.to(device)
 
     # u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
     # u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
