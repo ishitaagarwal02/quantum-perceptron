@@ -16,7 +16,7 @@ import pdb
 complex_const = -1j
 
 
-N = 9
+N = 7
 L1 = 4
 
 N1 = N
@@ -27,18 +27,18 @@ detun = [2 * val for val in j] + [2 * sum(j)]
 inter = [4 * val for val in j]
 
 # Initialize the resulting matrix as zero
-matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
-matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
-matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+# matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+# matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+# matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 
 s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64)
 p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex64)
 n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex64)
 
-matrix = matrix.to(device)
-matrix2 = matrix2.to(device)
-matrix3 = matrix3.to(device)
+# matrix = matrix.to(device)
+# matrix2 = matrix2.to(device)
+# matrix3 = matrix3.to(device)
 ham = ham.to(device)
 s = s.to(device)
 p = p.to(device)
@@ -52,7 +52,7 @@ for j in range(N1):
         matrices.append(m)
     result = reduce(torch.kron, matrices)
     # matrix += rabif[j] * result
-    matrix.add_(rabif[j] * result)
+    ham.add_(rabif[j] * result)
     del result
 # pdb.set_trace()
 
@@ -63,7 +63,7 @@ for j in range(N1):
         matrices.append(m)
     result = reduce(torch.kron, matrices)
     # matrix2 += detun[j] * result
-    matrix2.add_(detun[j] * result)
+    ham.add_(detun[j] * result)
     del result
 
 for j in range(N1-1):
@@ -74,7 +74,7 @@ for j in range(N1-1):
     matrices.append(n)    
     result = reduce(torch.kron, matrices)
     # matrix3 += inter[j]*result
-    matrix3.add_(inter[j] * result)
+    ham.add_(inter[j] * result)
     del result
 
 
@@ -84,7 +84,6 @@ def get_U(a,b,g):
     pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex64)
     identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex64)
     pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex64)
-    iden = torch.eye(2**N1, dtype=torch.complex64)
     pauli_x = pauli_x.to(device)
     identity = identity.to(device)
     pauli_z = pauli_z.to(device)
@@ -124,18 +123,19 @@ def get_U(a,b,g):
         # del u2
         # del u3
         # del iden
-        U = torch.matmul((torch.cos((g[i]))*iden - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*iden - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*iden - 1j *torch.sin((a[i]))*result_z),U)))
+        U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((a[i]))*result_z),U)))
 
     return U
 
 def evolution(time, params,l):
     N1 = N
     L = L1
+    global ham
     a = params[0]
     b = params[1]
     g = params[2]
     complex_const = -1j
-    ham = (complex_const * time)*(matrix - matrix2 + matrix3)
+    ham = (complex_const * time)*ham
     # pdb.set_trace()
     # if ham.is_cuda:
     #     ham = ham.cpu()
@@ -162,7 +162,6 @@ def evolution(time, params,l):
     return U_final
 
 def expectation(state,time,params):
-    N1 = N
     # pdb.set_trace()
     L = L1
     # state = state.reshape(4, 4)
@@ -170,14 +169,12 @@ def expectation(state,time,params):
     state = state.to(device)
     state = (torch.kron(state, torch.tensor([1.,0.]).to(device)))
     # for l in range(L):
-    U = evolution(time,params,L)
+    with torch.no_grad():
+        U = evolution(time,params,L)
     state = U @ state.view(-1,state.size()[0])
-    state_final = torch.abs(state) ** 2
-    del state
-    del U
-    exp0 = torch.sum(state_final[::2], axis = 0)
-    exp1 = torch.sum(state_final[1::2], axis = 0)
-    del state_final
+    state = torch.abs(state) ** 2
+    exp0 = torch.sum(state[::2], axis = 0)
+    exp1 = torch.sum(state[1::2], axis = 0)
     expt = exp0 - exp1
     del exp0
     del exp1

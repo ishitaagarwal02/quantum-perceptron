@@ -10,8 +10,9 @@ import numpy as np
 import random
 from torch.utils.data import Dataset, DataLoader
 import tracemalloc
+import psutil
 
-D = 8
+D = 6
 tracemalloc.start()
 # torch.manual_seed(0)
 def z1phase():
@@ -154,18 +155,10 @@ def z3phase():
 
     return states100, states010, states001
 
-for i in torch.arange(15):
-    s11, s12 = z1phase()
-
-for i in torch.arange(15):
-    s21, s22 = z2phase()
-
-for i in torch.arange(10):    
-    s31, s32, s33 = z3phase()
 
 z2state_list = []
 z2label_list = []
-for i in torch.arange(36):
+for i in torch.arange(18):
     s21, s22 = z2phase()
     z2state_list.append(s21)
     z2state_list.append(s22)
@@ -204,7 +197,7 @@ for states, labels in dataloader_z2:
 
 z3state_list = []
 z3label_list = []
-for i in torch.arange(24):
+for i in torch.arange(12):
     s31, s32, s33 = z3phase()
     z3state_list.append(s31)
     z3state_list.append(s32)
@@ -242,7 +235,7 @@ for states, labels in dataloader_z3:
 from torch.utils.data import ConcatDataset
 
 dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
-dataloader_combined = DataLoader(dataset_combined, batch_size=24, shuffle=True)
+dataloader_combined = DataLoader(dataset_combined, batch_size=9, shuffle=True)
 
 class DatasetLoader():
     def return_dataset(self):
@@ -256,4 +249,13 @@ class DatasetLoader():
 # for stat in top_stats[:10]:
 #     print(stat)
     
-tracemalloc.stop()
+# import os
+
+
+# print("memory time")
+# def get_memory_info():
+#     process = psutil.Process(os.getpid())
+#     return process.memory_info().rss / 1024**2  # in MB
+
+# print(get_memory_info())
+# tracemalloc.stop()
