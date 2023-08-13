@@ -17,7 +17,7 @@ complex_const = -1j
 
 
 N = 10
-L1 = 4
+L1 = 16
 
 N1 = N
 j = [1] * (N1-1)
