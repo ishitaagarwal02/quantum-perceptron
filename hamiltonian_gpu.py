@@ -16,7 +16,7 @@ import pdb
 complex_const = -1j
 
 
-N = 7
+N = 10
 L1 = 4
 
 N1 = N
