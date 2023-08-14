@@ -311,7 +311,10 @@ for epoch in range(2000):
             pred = model(state)
             pred = pred.reshape(-1,)
             loss = criterion(pred, val.float())
+            loss = loss.to(device)
             total_loss += loss
+            total_loss = total_loss.to(device)
+
             # print(pred)
             # loss.backward()
             # optimizer.step()            
