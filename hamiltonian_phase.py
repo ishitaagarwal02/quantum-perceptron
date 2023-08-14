@@ -31,8 +31,8 @@ complex_const = -1j
 
 tracemalloc.start()
 
-N = 10
-L1 = 1
+N = 5
+L1 = 4
 
 N1 = N
 j = [1] * (N1-1)
@@ -116,7 +116,7 @@ def get_U(a,b,g):
         u2 = torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x
         u3 = torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z
         U = u3 @ u2 @ u1 @ U
-        print("here")
+        # print("here")
         del u1
         del u2
         del u3
@@ -157,7 +157,7 @@ def expectation(state,time,params):
     U = evolution(time,params,L)
     state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
-    del state_final
+    # del state_final
     del U
     exp0 = torch.sum(state_final[::2], axis = 0)
     exp1 = torch.sum(state_final[1::2], axis = 0)
@@ -205,7 +205,7 @@ class QuantumPerceptron(nn.Module):
 
     def init_r(self, state):
         self.r = []
-        for t in torch.arange(0.1,1.,0.2):
+        for t in torch.arange(0.01,0.1,0.01):
             expectations = expectation(state, t, self.params)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
@@ -224,7 +224,7 @@ class QuantumPerceptron(nn.Module):
 
 
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
-model = QuantumPerceptron(input_size= 5, output_size= 1, hidden_size = 1)
+model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
@@ -240,7 +240,7 @@ z3_dataset, z3_dataloader = y.return_dataset()
 
 dataset, dataloader = z.return_dataset()
 
-for epoch in range(5):
+for epoch in range(500):
     print("epoch:", epoch)
     try:
         losses = []
@@ -255,7 +255,7 @@ for epoch in range(5):
             pred = model(state)
             pred = pred.reshape(-1,)
             loss = criterion(pred, val.float())
-            total_loss += loss.item()
+            total_loss += loss
             # print(pred)
             loss.backward()
             optimizer.step()            
@@ -304,7 +304,7 @@ for epoch in range(5):
     except KeyboardInterrupt:
         pdb.set_trace()
         continue
-tracemalloc.stop()
+# tracemalloc.stop()
 # pdb.set_trace()
-file_path = './quantumPercPhase2.pth'
-torch.save(model.state_dict(),file_path)
+# file_path = './quantumPercPhase2.pth'
+# torch.save(model.state_dict(),file_path)
