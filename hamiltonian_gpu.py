@@ -325,6 +325,7 @@ for epoch in range(2000):
         print("Backward prop...")
         print(total_loss)
 
+
         # for param in model.parameters():
         #     param.data.clamp_(0, 2*torch.pi)
 
