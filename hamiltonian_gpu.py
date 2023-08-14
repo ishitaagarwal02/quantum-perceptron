@@ -312,8 +312,8 @@ for epoch in range(2000):
             pred = pred.reshape(-1,)
             loss = criterion(pred, val.float())
             loss = loss.to(device)
-            total_loss += loss
             total_loss = total_loss.to(device)
+            total_loss += loss
 
             # print(pred)
             # loss.backward()
