@@ -168,8 +168,8 @@ def expectation(state,time,params):
     state = state.to(device)
     state = (torch.kron(state, torch.tensor([1.,0.]).to(device)))
     # for l in range(L):
-    with torch.no_grad():
-        U = evolution(time,params,L)
+    # with torch.no_grad():
+    U = evolution(time,params,L)
     state = U @ state.view(-1,state.size()[0])
     state = torch.abs(state) ** 2
     exp0 = torch.sum(state[::2], axis = 0)
