@@ -311,14 +311,14 @@ for epoch in range(2000):
             pred = model(state)
             pred = pred.reshape(-1,)
             loss = criterion(pred, val.float())
-            total_loss += loss.item()
+            total_loss += loss
             # print(pred)
-            loss.backward()
-            optimizer.step()            
+            # loss.backward()
+            # optimizer.step()            
 
 
-        # total_loss.backward()
-        # optimizer.step()            
+        total_loss.backward()
+        optimizer.step()            
         print("Backward prop...")
         print(total_loss)
 
