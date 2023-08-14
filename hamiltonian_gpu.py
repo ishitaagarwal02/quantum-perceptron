@@ -313,12 +313,12 @@ for epoch in range(2000):
             loss = criterion(pred, val.float())
             total_loss += loss.item()
             # print(pred)
-            # loss.backward()
-            # optimizer.step()            
+            loss.backward()
+            optimizer.step()            
 
 
-        total_loss.backward()
-        optimizer.step()            
+        # total_loss.backward()
+        # optimizer.step()            
         print("Backward prop...")
         print(total_loss)
 
