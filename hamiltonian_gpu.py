@@ -123,7 +123,9 @@ def get_U(a,b,g):
         # del u3
         # del iden
         U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1).to(device) - 1j *torch.sin((a[i]))*result_z),U)))
-
+        del result_x
+        del result_z
+    
     return U
 
 def evolution(time, params,l):
