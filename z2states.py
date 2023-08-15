@@ -229,7 +229,7 @@ for states, labels in dataloader_z3:
 from torch.utils.data import ConcatDataset
 
 dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
-dataloader_combined = DataLoader(dataset_combined, batch_size=24, shuffle=False)
+dataloader_combined = DataLoader(dataset_combined, batch_size=8, shuffle=False)
 
 class DatasetLoader():
     def return_dataset(self):
