@@ -315,10 +315,9 @@ for epoch in range(2000):
             total_loss += loss
 
             # print(pred)
-            if c%12==0:
-                loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()            
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()            
 
 
         # total_loss.backward()
