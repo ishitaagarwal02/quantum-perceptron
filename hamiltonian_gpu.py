@@ -16,7 +16,7 @@ import pdb
 complex_const = -1j
 
 
-N = 10
+N = 9
 L1 = 4
 
 N1 = N
@@ -315,14 +315,14 @@ for epoch in range(2000):
             total_loss += loss
 
             # print(pred)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()            
+            # loss.backward()
+            # optimizer.step()
+            # optimizer.zero_grad()            
 
 
-        # total_loss.backward()
-        # optimizer.step()  
-        # optimizer.zero_grad()          
+        total_loss.backward()
+        optimizer.step()  
+        optimizer.zero_grad()          
         print("Backward prop...")
         print(total_loss)
 
