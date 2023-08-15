@@ -302,9 +302,7 @@ for epoch in range(2000):
     
         model.train()
         total_loss = torch.tensor(0.0)
-        c = 0
         for state, val in tqdm(dataloader):
-            c+=1
             state = state.to(device)
             val = val.to(device)
             pred = model(state)
