@@ -30,19 +30,19 @@ inter = [4 * val for val in j]
 # matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 # matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 # matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
-ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex64).to(device)
 
-s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64)
-p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex64)
-n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex64)
+s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64).to(device)
+p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex64).to(device)
+n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex64).to(device)
 
 # matrix = matrix.to(device)
 # matrix2 = matrix2.to(device)
 # matrix3 = matrix3.to(device)
-ham = ham.to(device)
-s = s.to(device)
-p = p.to(device)
-n = n.to(device)
+# ham = ham.to(device)
+# s = s.to(device)
+# p = p.to(device)
+# n = n.to(device)
 
 # Loop over all combinations
 for j in range(N1):
@@ -81,28 +81,28 @@ for j in range(N1-1):
 def get_U(a,b,g):
     
     N1 = N
-    pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex64)
-    identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex64)
-    pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex64)
-    pauli_x = pauli_x.to(device)
-    identity = identity.to(device)
-    pauli_z = pauli_z.to(device)
+    pauli_x = torch.tensor([[0., 1.], [1., 0.]], dtype=torch.complex64).to(device)
+    identity = torch.tensor([[1., 0.], [0., 1.]], dtype=torch.complex64).to(device)
+    pauli_z = torch.tensor([[1., 0.], [0., -1.]], dtype=torch.complex64).to(device)
+    # pauli_x = pauli_x.to(device)
+    # identity = identity.to(device)
+    # pauli_z = pauli_z.to(device)
 
     # u1 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
     # u2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
     # u3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
-    U = torch.eye(2**N1, dtype=torch.complex64)
-    U = U.to(device)
+    U = torch.eye(2**N1, dtype=torch.complex64).to(device)
+    # U = U.to(device)
     # iden = torch.eye(2**N1).to(device)
 
     for i in range(N1):
         pz = [pauli_z if j == i else identity for j in range(N1)]
         px = [pauli_x if j == i else identity for j in range(N1)]
 
-        result_z = reduce(torch.kron, pz)
-        result_x = reduce(torch.kron, px)
-        result_z = result_z.to(device)
-        result_x = result_x.to(device)
+        result_z = reduce(torch.kron, pz).to(device)
+        result_x = reduce(torch.kron, px).to(device)
+        # result_z = result_z.to(device)
+        # result_x = result_x.to(device)
         del px
         del pz
         # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
@@ -144,13 +144,13 @@ def evolution(time, params,l):
     H = H.to(device)
     # H = get_H(time)
 
-    U_final = torch.eye(2**N1, dtype=torch.complex64)
-    U_final = U_final.to(device)
+    U_final = torch.eye(2**N1, dtype=torch.complex64).to(device)
+    # U_final = U_final.to(device)
     for l in range(L):
-        U1 = get_U(a[l][0],b[l][0],g[l][0])
-        U2 = get_U(a[l][1],b[l][1],g[l][1])
-        U1 = U1.to(device)
-        U2 = U2.to(device)
+        U1 = get_U(a[l][0],b[l][0],g[l][0]).to(device)
+        U2 = get_U(a[l][1],b[l][1],g[l][1]).to(device)
+        # U1 = U1.to(device)
+        # U2 = U2.to(device)
         # pdb.set_trace()
         # U_result = torch.matmul(torch.matmul(U2, H), U1)
         # U_final = torch.matmul(U_result, U_final)
@@ -212,12 +212,9 @@ class QuantumPerceptron(nn.Module):
         # self.layer1 = nn.Linear(input_size, output_size)
         L = L1
         N1 = N
-        a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
-        b = torch.normal(mean=0.0, std=1., size=[L,2,N1])
-        g = torch.normal(mean=0.0, std=1., size=[L,2,N1])
-        a = a.to(device)
-        b = b.to(device)
-        g = g.to(device)
+        a = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
+        b = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
+        g = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
         self.params = nn.Parameter((torch.stack((a,b,g))))
         self.params.requires_grad = True
 
