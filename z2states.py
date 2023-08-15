@@ -216,11 +216,11 @@ dataset_z3 = Z3StateDataset(z3state_list, z3label_list)
 class Z3DatasetLoader():
     def return_dataset(self):
         dataset = Z3StateDataset(z3state_list, z3label_list)
-        dataloader = DataLoader(dataset, batch_size=18, shuffle=True)
+        dataloader = DataLoader(dataset, batch_size=18, shuffle=False)
         return dataset, dataloader
 
 # Create the dataloader
-dataloader_z3 = DataLoader(dataset_z3, batch_size=18, shuffle=True)
+dataloader_z3 = DataLoader(dataset_z3, batch_size=18, shuffle=False)
 for states, labels in dataloader_z3:
     print(states, labels)
 
@@ -229,7 +229,7 @@ for states, labels in dataloader_z3:
 from torch.utils.data import ConcatDataset
 
 dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
-dataloader_combined = DataLoader(dataset_combined, batch_size=24, shuffle=True)
+dataloader_combined = DataLoader(dataset_combined, batch_size=16, shuffle=True)
 
 class DatasetLoader():
     def return_dataset(self):

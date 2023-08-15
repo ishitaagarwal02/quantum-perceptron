@@ -32,7 +32,7 @@ complex_const = -1j
 tracemalloc.start()
 
 N = 5
-L1 = 4
+L1 = 8
 
 N1 = N
 j = [1] * (N1-1)
@@ -154,8 +154,8 @@ def expectation(state,time,params):
 
     L = L1
     state = (torch.kron(state, torch.tensor([1.,0.])))
-    with torch.no_grad():
-        U = evolution(time,params,L)
+    # with torch.no_grad():
+    U = evolution(time,params,L)
     state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
     # del state_final
