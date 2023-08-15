@@ -154,7 +154,8 @@ def expectation(state,time,params):
 
     L = L1
     state = (torch.kron(state, torch.tensor([1.,0.])))
-    U = evolution(time,params,L)
+    with torch.no_grad():
+        U = evolution(time,params,L)
     state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
     # del state_final
@@ -251,18 +252,19 @@ for epoch in range(500):
         for state, val in tqdm(dataloader):
             # state = state.to(device)
             # val = val.to(device)
-            optimizer.zero_grad()
+            # optimizer.zero_grad()
             pred = model(state)
             pred = pred.reshape(-1,)
             loss = criterion(pred, val.float())
             total_loss += loss
             # print(pred)
-            loss.backward()
-            optimizer.step()            
+            # loss.backward()
+            # optimizer.step()            
 
 
-        # total_loss.backward()
-        # optimizer.step()            
+        total_loss.backward()
+        optimizer.step() 
+        optimizer.zero_grad()           
         print("Backward prop...")
         print(total_loss)
 

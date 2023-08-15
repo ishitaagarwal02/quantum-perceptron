@@ -7,7 +7,7 @@ from functools import reduce
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
-D = 4
+D = 9
 # torch.manual_seed(0)
 def z1phase():
     
@@ -152,7 +152,7 @@ def z3phase():
 
 z2state_list = []
 z2label_list = []
-for i in torch.arange(18):
+for i in torch.arange(36):
     s21, s22 = z2phase()
     z2state_list.append(s21)
     z2state_list.append(s22)
@@ -191,7 +191,7 @@ for states, labels in dataloader_z2:
 
 z3state_list = []
 z3label_list = []
-for i in torch.arange(12):
+for i in torch.arange(24):
     s31, s32, s33 = z3phase()
     z3state_list.append(s31)
     z3state_list.append(s32)
@@ -229,7 +229,7 @@ for states, labels in dataloader_z3:
 from torch.utils.data import ConcatDataset
 
 dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
-dataloader_combined = DataLoader(dataset_combined, batch_size=12, shuffle=True)
+dataloader_combined = DataLoader(dataset_combined, batch_size=24, shuffle=False)
 
 class DatasetLoader():
     def return_dataset(self):

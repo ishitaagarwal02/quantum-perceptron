@@ -16,7 +16,7 @@ import pdb
 complex_const = -1j
 
 
-N = 5
+N = 10
 L1 = 4
 
 N1 = N
@@ -117,7 +117,7 @@ def get_U(a,b,g):
         # u3 = u3.to(device)
         # del result_x 
         # del result_z
-        # # U = u3 @ u2 @ u1 @ U
+        # U = u3 @ u2 @ u1 @ U
         # del u1
         # del u2
         # del u3
@@ -225,7 +225,7 @@ class QuantumPerceptron(nn.Module):
 
     def init_r(self, state):
         self.r = []
-        for t in torch.arange(0.01,0.1,0.01):
+        for t in torch.arange(0.01,0.02,0.01):
             expectations = expectation(state, t, self.params)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
@@ -265,7 +265,7 @@ class QuantumPerceptron(nn.Module):
         # return out
 
 
-model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
+model = QuantumPerceptron(input_size= 1, output_size= 1, hidden_size = 1).to(device)
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr = 0.01)
@@ -307,7 +307,6 @@ for epoch in range(2000):
         for state, val in tqdm(dataloader):
             state = state.to(device)
             val = val.to(device)
-            optimizer.zero_grad()
             pred = model(state)
             pred = pred.reshape(-1,)
             loss = criterion(pred, val.float())
@@ -317,11 +316,13 @@ for epoch in range(2000):
 
             # print(pred)
             loss.backward()
-            optimizer.step()            
+            optimizer.step()
+            optimizer.zero_grad()            
 
 
         # total_loss.backward()
-        # optimizer.step()            
+        # optimizer.step()  
+        # optimizer.zero_grad()          
         print("Backward prop...")
         print(total_loss)
 

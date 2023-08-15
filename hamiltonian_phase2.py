@@ -60,7 +60,7 @@ for j in range(N1):
         matrices.append(m)
     result = reduce(torch.kron, matrices)
     # matrix2 += detun[j] * result
-    ham.add_(detun[j] * result)
+    ham.add_(-1 * detun[j] * result)
     del result
 
 for j in range(N1-1):
