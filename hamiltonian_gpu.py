@@ -300,8 +300,9 @@ for epoch in range(2000):
     
         model.train()
         total_loss = torch.tensor(0.0)
-
+        c = 0
         for state, val in tqdm(dataloader):
+            c+=1
             state = state.to(device)
             val = val.to(device)
             pred = model(state)
@@ -312,14 +313,15 @@ for epoch in range(2000):
             total_loss += loss
 
             # print(pred)
-            # loss.backward()
-            # optimizer.step()
-            # optimizer.zero_grad()            
+            if c%12==0:
+                loss.backward()
+                optimizer.step()
+                optimizer.zero_grad()            
 
 
-        total_loss.backward()
-        optimizer.step()  
-        optimizer.zero_grad()          
+        # total_loss.backward()
+        # optimizer.step()  
+        # optimizer.zero_grad()          
         print("Backward prop...")
         print(total_loss)
 
