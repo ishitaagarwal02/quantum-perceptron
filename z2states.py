@@ -229,7 +229,7 @@ dataloader_z3 = DataLoader(dataset_z3, batch_size=18, shuffle=False)
 from torch.utils.data import ConcatDataset
 
 dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
-dataloader_combined = DataLoader(dataset_combined, batch_size=12, shuffle=False)
+dataloader_combined = DataLoader(dataset_combined, batch_size=24, shuffle=False)
 
 class DatasetLoader():
     def return_dataset(self):
