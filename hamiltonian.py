@@ -306,6 +306,7 @@ mfa_dataset, mfa_dataloader = y.return_dataset()
 
 import pandas as pd
 
+
 # Assume we have a DataLoader named 'dataloader'
 
 # Create lists for each column in the DataFrame
@@ -337,9 +338,9 @@ vals = []
 #     'Val':vals,
 # })
 
+import random
 
-
-for epoch in range(120):
+for epoch in range(1200):
     print("epoch:", epoch)
     try:
         losses = []
@@ -352,12 +353,13 @@ for epoch in range(120):
             # pdb.set_trace()
 
         # for mfa, quant in tqdm(zip(mfa_dataloader, heisenberg_dataloader)):
+
+        
         for J, eigenvalue, eigenvector, val in tqdm(heisenberg_dataloader):
             pred = model(eigenvector)
             loss = criterion(pred, val.float())
             total_loss += loss
             losses.append(loss.item())
-            
         for J, eigenvalue, _, val, eigenvector in tqdm(mfa_dataloader):
             eigenvector = eigenvector.to(torch.complex128)
             eigenvector = eigenvector.reshape(1, -1)
@@ -443,7 +445,7 @@ for epoch in range(120):
                 print(f'Accuracy: {accuracy}')
     
     except KeyboardInterrupt:
-        # pdb.set_trace()
+        pdb.set_trace()
         continue
 
 # pdb.set_trace()

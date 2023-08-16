@@ -7,7 +7,7 @@ from functools import reduce
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
-D = 4
+D = 9
 # torch.manual_seed(0)
 def z1phase():
     
@@ -182,9 +182,9 @@ class Z2DatasetLoader():
         dataloader = DataLoader(dataset, batch_size=18, shuffle=False)
         return dataset, dataloader
     
-for states, labels in dataloader_z2:
-    # pdb.set_trace()
-    print(states, labels)
+# for states, labels in dataloader_z2:
+#     # pdb.set_trace()
+#     print(states, labels)
 
 # print(tracemalloc.get_traced_memory())
 
@@ -216,24 +216,27 @@ dataset_z3 = Z3StateDataset(z3state_list, z3label_list)
 class Z3DatasetLoader():
     def return_dataset(self):
         dataset = Z3StateDataset(z3state_list, z3label_list)
-        dataloader = DataLoader(dataset, batch_size=12, shuffle=False)
+        dataloader = DataLoader(dataset, batch_size=18, shuffle=False)
         return dataset, dataloader
 
 # Create the dataloader
 dataloader_z3 = DataLoader(dataset_z3, batch_size=18, shuffle=False)
-for states, labels in dataloader_z3:
-    print(states, labels)
+# for states, labels in dataloader_z3:
+#     print(states, labels)
 
 # print(tracemalloc.get_traced_memory())
 
 from torch.utils.data import ConcatDataset
 
 dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
-dataloader_combined = DataLoader(dataset_combined, batch_size=16, shuffle=True)
+dataloader_combined = DataLoader(dataset_combined, batch_size=6, shuffle=False)
 
 class DatasetLoader():
     def return_dataset(self):
         return dataset_combined, dataloader_combined
+    
+for states, labels in dataloader_combined:
+    print(states, labels)
 # print(tracemalloc.get_traced_memory())
 
 # snapshot = tracemalloc.take_snapshot()

@@ -170,11 +170,11 @@ class QuantumPerceptron(nn.Module):
     """
     def __init__(self, input_size, hidden_size, output_size):
         super(QuantumPerceptron, self).__init__()
-        self.layer1 = nn.Linear(input_size, hidden_size)
-        self.mid_layers = nn.ModuleList()
-        for _ in range(num_layers):
-            self.mid_layers.append(nn.Linear(hidden_size, hidden_size))
-        self.layer2 = nn.Linear(hidden_size, output_size)
+        self.layer1 = nn.Linear(input_size, output_size)
+        # self.mid_layers = nn.ModuleList()
+        # for _ in range(num_layers):
+        #     self.mid_layers.append(nn.Linear(hidden_size, hidden_size))
+        # self.layer2 = nn.Linear(hidden_size, output_size)
         L = 4
         N1 = 5
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
@@ -216,10 +216,10 @@ class QuantumPerceptron(nn.Module):
         # print(self.r)
         out = self.layer1(self.r)
         # out = F.gelu(out)
-        for layer in self.mid_layers:
-            out = layer(out)
-            out = F.gelu(out)
-        out = self.layer2(out)
+        # for layer in self.mid_layers:
+        #     out = layer(out)
+        #     out = F.gelu(out)
+        # out = self.layer2(out)
         out = F.tanh(out)
         # return return_energy(out)
         return out
@@ -230,7 +230,7 @@ class QuantumPerceptron(nn.Module):
 XYg_dataset, XYg_dataloader = x.return_dataset()
 XYmfa_dataset, XYmfa_dataloader = y.return_dataset()
 model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 144)
-model.load_state_dict(torch.load('./quantumPerc.pth'))
+model.load_state_dict(torch.load('./quantumPerc2.pth'))
 # model.eval()
 predictions_g = []
 predictions_mfa = []
@@ -241,11 +241,28 @@ with torch.no_grad():
     correct_predictions = 0
     total_predictions = 0
 
+    print("Iterating through XY_MFA (for accuracy)...")
+    for J, eigenvalue, _, val, eigenvector in tqdm(XYmfa_dataloader):
+        pred = model(eigenvector)
+        predictions_mfa.append(pred.item())
+
+        # print("state:", eigenvector)
+        print("val:", val)
+        print("prediction:", pred)
+        # Convert predictions and true values to -1 or 1
+        pred_rounded = torch.where(pred < 0, -1, 1)
+        val_rounded = torch.where(val > 0., 1, -1)
+
+        # Count correct predictions
+        correct_predictions += torch.sum(pred_rounded == val_rounded).item()
+
+        total_predictions += len(val)
+
     print("Iterating through XY (for accuracy)...")    
     for J, eigenvalue, eigenvector, val in tqdm(XYg_dataloader):
         pred = model(eigenvector)
         predictions_g.append(pred.item())
-        print("state:", eigenvector)
+        # print("state:", eigenvector)
         print("val:", val)
         print("prediction:", pred)
         # Convert predictions and true values to -1 or 1
@@ -258,29 +275,12 @@ with torch.no_grad():
 
         total_predictions += len(val)
 
-    print("Iterating through XY_MFA (for accuracy)...")
-    for J, eigenvalue, _, val, eigenvector in tqdm(XYmfa_dataloader):
-        pred = model(eigenvector)
-        predictions_mfa.append(pred.item())
-
-        print("state:", eigenvector)
-        print("val:", val)
-        print("prediction:", pred)
-        # Convert predictions and true values to -1 or 1
-        pred_rounded = torch.where(pred < 0, -1, 1)
-        val_rounded = torch.where(val > 0., 1, -1)
-
-        # Count correct predictions
-        correct_predictions += torch.sum(pred_rounded == val_rounded).item()
-
-        total_predictions += len(val)
-
     accuracy = correct_predictions / total_predictions
     print(f'Accuracy: {accuracy}')
-import matplotlib.pyplot as plt
-print("_____predictions of entangled state_____")
-print(predictions_g)
-print("_____predictions of separable state_____")
-print(predictions_mfa)
-plt.plot(predictions_g)
-plt.show()
+# import matplotlib.pyplot as plt
+# print("_____predictions of entangled state_____")
+# print(predictions_g)
+# print("_____predictions of separable state_____")
+# print(predictions_mfa)
+# plt.plot(predictions_g)
+# plt.show()

@@ -32,10 +32,10 @@ complex_const = -1j
 tracemalloc.start()
 
 N = 5
-L1 = 8
+L1 = 4
 
 N1 = N
-j = [1] * (N1-1)
+j = [0.4] * (N1-1)
 omega = -20
 rabif =  [0] * (N1 - 1) + [omega]
 detun = [2 * val for val in j] + [2 * sum(j)]
@@ -107,8 +107,8 @@ def get_U(a,b,g):
             px.append(x)
         result_z = reduce(torch.kron, pz)
         result_x = reduce(torch.kron, px)
-        del pz
-        del px
+        # del pz
+        # del px
         # u1 = torch.tensor(-1j * a[i] * result_z).matrix_exp()
         # u2 = torch.tensor(-1j * b[i] * result_x).matrix_exp()
         # u3 = torch.tensor(-1j * g[i] * result_z).matrix_exp()
@@ -117,11 +117,11 @@ def get_U(a,b,g):
         u3 = torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z
         U = u3 @ u2 @ u1 @ U
         # print("here")
-        del u1
-        del u2
-        del u3
-        del result_x
-        del result_z
+        # del u1
+        # del u2
+        # del u3
+        # del result_x
+        # del result_z
         # pdb.set_trace()
        
         # U = torch.matmul((torch.cos((g[i]))*torch.eye(2**N1) - 1j *torch.sin((g[i]))*result_z),torch.matmul((torch.cos((b[i]))*torch.eye(2**N1) - 1j *torch.sin((b[i]))*result_x),torch.matmul((torch.cos((a[i]))*torch.eye(2**N1) - 1j *torch.sin((a[i]))*result_z),U)))
@@ -145,8 +145,8 @@ def evolution(time, params,l):
         U1 = get_U(a[l][0],b[l][0],g[l][0])
         U2 = get_U(a[l][1],b[l][1],g[l][1])
         U_final = torch.matmul(torch.matmul(torch.matmul(U2, H), U1), U_final)
-        del U1
-        del U2
+        # del U1
+        # del U2
 
     return U_final
 
@@ -159,12 +159,12 @@ def expectation(state,time,params):
     state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
     # del state_final
-    del U
+    # del U
     exp0 = torch.sum(state_final[::2], axis = 0)
     exp1 = torch.sum(state_final[1::2], axis = 0)
     expt = exp0 - exp1
-    del exp0
-    del exp1
+    # del exp0
+    # del exp1
     return expt
 
 
@@ -199,6 +199,9 @@ class QuantumPerceptron(nn.Module):
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         b = torch.normal(mean=0.0, std=1., size=[L,2,N1])
         g = torch.normal(mean=0.0, std=1., size=[L,2,N1])
+        # a = torch.zeros(size=[L,2,N1])
+        # b = torch.zeros(size=[L,2,N1])
+        # g = torch.zeros(size=[L,2,N1])
         self.params = nn.Parameter((torch.stack((a,b,g))))
         self.params.requires_grad = True
 
@@ -225,28 +228,30 @@ class QuantumPerceptron(nn.Module):
 
 
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
-model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
+model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 0)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr = 0.01)
+optimizer = optim.Adadelta(model.parameters(), lr = 0.01)
 model = model
 
 torch.manual_seed(0)
 
-x = Z2DatasetLoader()
-y = Z3DatasetLoader()
+# x = Z2DatasetLoader()
+# y = Z3DatasetLoader()
 z = DatasetLoader()
+losses = []
 
-z2_dataset, z2_dataloader = x.return_dataset()
-z3_dataset, z3_dataloader = y.return_dataset()
+
+# z2_dataset, z2_dataloader = x.return_dataset()
+# z3_dataset, z3_dataloader = y.return_dataset()
 
 dataset, dataloader = z.return_dataset()
 
-for epoch in range(500):
+for epoch in range(3000):
     print("epoch:", epoch)
     try:
-        losses = []
     
         model.train()
+        # optimizer.zero_grad()
         total_loss = torch.tensor(0.0)
 
         for state, val in tqdm(dataloader):
@@ -261,7 +266,7 @@ for epoch in range(500):
             # loss.backward()
             # optimizer.step()            
 
-
+        losses.append(total_loss)
         total_loss.backward()
         optimizer.step() 
         optimizer.zero_grad()           
