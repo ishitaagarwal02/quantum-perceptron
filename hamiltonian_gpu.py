@@ -17,7 +17,7 @@ complex_const = -1j
 
 
 N = 10
-L1 = 4
+L1 = 8
 
 N1 = N
 j = [1] * (N1-1)
@@ -224,7 +224,7 @@ class QuantumPerceptron(nn.Module):
 
     def init_r(self, state):
         self.r = []
-        for t in torch.arange(0.01,0.03,0.01):
+        for t in torch.arange(0.01,0.02,0.01):
             expectations = expectation(state, t, self.params)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
@@ -264,7 +264,7 @@ class QuantumPerceptron(nn.Module):
         # return out
 
 
-model = QuantumPerceptron(input_size= 2, output_size= 1, hidden_size = 1).to(device)
+model = QuantumPerceptron(input_size= 1, output_size= 1, hidden_size = 1).to(device)
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr = 0.01)
@@ -313,14 +313,14 @@ for epoch in range(200):
             total_loss += loss
 
             # print(pred)
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()            
+            # loss.backward()
+            # optimizer.step()
+            # optimizer.zero_grad()            
 
 
-        # total_loss.backward()
-        # optimizer.step()  
-        # optimizer.zero_grad()          
+        total_loss.backward()
+        optimizer.step()  
+        optimizer.zero_grad()          
         print("Backward prop...")
         print(total_loss)
 
