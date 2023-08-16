@@ -313,14 +313,14 @@ for epoch in range(200):
             total_loss += loss
 
             # print(pred)
-            # loss.backward()
-            # optimizer.step()
-            # optimizer.zero_grad()            
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()            
 
 
-        total_loss.backward()
-        optimizer.step()  
-        optimizer.zero_grad()          
+        # total_loss.backward()
+        # optimizer.step()  
+        # optimizer.zero_grad()          
         print("Backward prop...")
         print(total_loss)
 
