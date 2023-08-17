@@ -289,20 +289,32 @@ for epoch in range(200):
     try:
         losses = []
         total_loss = torch.tensor(0.0)
-        a = model.params[0]
-        b = model.params[1]
-        g = model.params[2]
-        L = L1
-        U = []
-        for l in range(L):
-            U1 = get_U(a[l][0],b[l][0],g[l][0]).to(device)
-            U2 = get_U(a[l][1],b[l][1],g[l][1]).to(device)
-            U.append(U1)
-            U.append(U2)
+        # a = model.params[0]
+        # b = model.params[1]
+        # g = model.params[2]
+        # L = L1
+        # U = []
+        # for l in range(L):
+        #     U1 = get_U(a[l][0],b[l][0],g[l][0]).to(device)
+        #     U2 = get_U(a[l][1],b[l][1],g[l][1]).to(device)
+        #     U.append(U1)
+        #     U.append(U2)
         model.train()
         total_loss = torch.tensor(0.0)
 
         for state, val in tqdm(dataloader):
+
+            a = model.params[0]
+            b = model.params[1]
+            g = model.params[2]
+            L = L1
+            U = []
+            for l in range(L):
+                U1 = get_U(a[l][0],b[l][0],g[l][0]).to(device)
+                U2 = get_U(a[l][1],b[l][1],g[l][1]).to(device)
+                U.append(U1)
+                U.append(U2)
+
             state = state.to(device)
             val = val.to(device)
             pred = model(state, U)
@@ -313,14 +325,14 @@ for epoch in range(200):
             total_loss += loss
 
             # print(pred)
-            # loss.backward()
-            # optimizer.step()
-            # optimizer.zero_grad()            
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()            
 
 
-        total_loss.backward()
-        optimizer.step()  
-        optimizer.zero_grad()          
+        # total_loss.backward()
+        # optimizer.step()  
+        # optimizer.zero_grad()          
         print("Backward prop...")
         print(total_loss)
 
