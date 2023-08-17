@@ -213,7 +213,7 @@ class QuantumPerceptron(nn.Module):
 
     def init_r(self, state, U):
         self.r = []
-        for t in torch.arange(0.01,0.06,0.01):
+        for t in torch.arange(0.01,0.1,0.01):
             expectations = expectation(state, t, U)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
@@ -253,7 +253,7 @@ class QuantumPerceptron(nn.Module):
         # return out
 
 
-model = QuantumPerceptron(input_size= 5, output_size= 1, hidden_size = 1).to(device)
+model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr = 0.01)
