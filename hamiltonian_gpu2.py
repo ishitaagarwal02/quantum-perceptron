@@ -16,7 +16,7 @@ import pdb
 complex_const = -1j
 
 
-N = 10
+N = 8
 L1 = 4
 
 N1 = N
@@ -256,7 +256,7 @@ class QuantumPerceptron(nn.Module):
 model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr = 0.1)
+optimizer = optim.Adam(model.parameters(), lr = 0.05)
 model = model
 # params = torch.randn(8)  # initial 
 # Initialize parameters with Gaussian distribution centered at 0
@@ -300,7 +300,7 @@ for epoch in range(2000):
         #     U.append(U1)
         #     U.append(U2)
         model.train()
-        total_loss = torch.tensor(0.0)
+        # total_loss = torch.tensor(0.0)
 
         for state, val in tqdm(dataloader):
 
