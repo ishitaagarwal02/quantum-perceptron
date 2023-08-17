@@ -256,7 +256,7 @@ class QuantumPerceptron(nn.Module):
 model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr = 0.05)
+optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
 # params = torch.randn(8)  # initial 
 # Initialize parameters with Gaussian distribution centered at 0
