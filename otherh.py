@@ -16,11 +16,11 @@ complex_const = -1j
 
 tracemalloc.start()
 
-N = 9
+N = 5
 L1 = 4
 
 N1 = N
-j = [0.4] * (N1-1)
+j = [1.] * (N1-1)
 omega = -20
 rabif =  [0] * (N1 - 1) + [omega]
 detun = [2 * val for val in j] + [2 * sum(j)]

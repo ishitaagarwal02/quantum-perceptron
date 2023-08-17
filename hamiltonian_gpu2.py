@@ -20,7 +20,7 @@ N = 8
 L1 = 8
 
 N1 = N
-j = [1] * (N1-1)
+j = [1.] * (N1-1)
 omega = -20
 rabif =  [0] * (N1 - 1) + [omega]
 detun = [2 * val for val in j] + [2 * sum(j)]
