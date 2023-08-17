@@ -284,7 +284,7 @@ eigenvectors = []
 vals = []
 
 
-for epoch in range(200):
+for epoch in range(2000):
     print("epoch:", epoch)
     try:
         losses = []

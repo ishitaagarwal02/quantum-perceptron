@@ -152,7 +152,7 @@ def z3phase():
 
 z2state_list = []
 z2label_list = []
-for i in torch.arange(36):
+for i in torch.arange(72):
     s21, s22 = z2phase()
     z2state_list.append(s21)
     z2state_list.append(s22)
@@ -191,7 +191,7 @@ class Z2DatasetLoader():
 
 z3state_list = []
 z3label_list = []
-for i in torch.arange(24):
+for i in torch.arange(48):
     s31, s32, s33 = z3phase()
     z3state_list.append(s31)
     z3state_list.append(s32)
