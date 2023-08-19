@@ -16,20 +16,20 @@ complex_const = -1j
 
 tracemalloc.start()
 
-N = 5
+N = 10
 L1 = 4
 
 N1 = N
 j = [1.] * (N1-1)
-omega = -20
+omega = -10
 rabif =  [0] * (N1 - 1) + [omega]
 detun = [2 * val for val in j] + [2 * sum(j)]
 inter = [4 * val for val in j]
 
-# Initialize the resulting matrix as zero
-matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
-matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
-matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+# # Initialize the resulting matrix as zero
+# matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+# matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+# matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 
 s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64)
@@ -44,7 +44,7 @@ for j in range(N1):
         matrices.append(m)
     result = reduce(torch.kron, matrices)
     # matrix += rabif[j] * result
-    matrix.add_(rabif[j] * result)
+    ham.add_(rabif[j] * result)
     del result
 # pdb.set_trace()
 
@@ -55,7 +55,7 @@ for j in range(N1):
         matrices.append(m)
     result = reduce(torch.kron, matrices)
     # matrix2 += detun[j] * result
-    matrix2.add_(detun[j] * result)
+    ham.add_(-1*detun[j] * result)
     del result
 
 for j in range(N1-1):
@@ -66,7 +66,7 @@ for j in range(N1-1):
     matrices.append(n)    
     result = reduce(torch.kron, matrices)
     # matrix3 += inter[j]*result
-    matrix3.add_(inter[j] * result)
+    ham.add_(inter[j] * result)
     del result
 
 
@@ -117,11 +117,12 @@ def get_U(a,b,g):
 def evolution(time, params,l,U):
     N1 = N
     L = L1
-    a = params[0]
-    b = params[1]
-    g = params[2]
+    global ham
+    # a = params[0]
+    # b = params[1]
+    # g = params[2]
     complex_const = -1j
-    ham = (complex_const * time)*(matrix - matrix2 + matrix3)
+    ham = (complex_const * time)*(ham)
     H = ham.matrix_exp()
     # H = get_H(time)
 
@@ -140,6 +141,7 @@ def expectation(state,time,params,U1):
     state = (torch.kron(state, torch.tensor([1.,0.])))
     # with torch.no_grad():
     U = evolution(time,params,L,U1)
+    # pdb.set_trace()
     state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
     # del state_final
@@ -193,7 +195,7 @@ class QuantumPerceptron(nn.Module):
 
     def init_r(self, state, U):
         self.r = []
-        for t in torch.arange(0.01,0.1,0.01):
+        for t in torch.arange(0.1,1.,0.1):
             expectations = expectation(state, t, self.params, U)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
@@ -214,10 +216,10 @@ class QuantumPerceptron(nn.Module):
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
 model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 0)
 criterion = nn.MSELoss()
-optimizer = optim.Adadelta(model.parameters(), lr = 0.01)
+optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
 
-torch.manual_seed(0)
+torch.manual_seed(42)
 
 # x = Z2DatasetLoader()
 # y = Z3DatasetLoader()
@@ -237,38 +239,39 @@ for epoch in range(3000):
         model.train()
         # optimizer.zero_grad()
         total_loss = torch.tensor(0.0)
-        a = model.params[0]
-        b = model.params[1]
-        g = model.params[2]
-        L = L1
-        U = []
-        for l in range(L):
-            U1 = get_U(a[l][0],b[l][0],g[l][0])
-            U2 = get_U(a[l][1],b[l][1],g[l][1])
-            U.append(U1)
-            U.append(U2)
+        
         # pdb.set_trace()
 
         for state, val in tqdm(dataloader):
             # state = state.to(device)
             # val = val.to(device)
             # optimizer.zero_grad()
+            a = model.params[0]
+            b = model.params[1]
+            g = model.params[2]
+            L = L1
+            U = []
+            for l in range(L):
+                U1 = get_U(a[l][0],b[l][0],g[l][0])
+                U2 = get_U(a[l][1],b[l][1],g[l][1])
+                U.append(U1)
+                U.append(U2)
             pred = model(state, U)
             pred = pred.reshape(-1,)
             loss = criterion(pred, val.float())
             total_loss += loss
             # print(pred)
-            # loss.backward()
-            # optimizer.step()   
-            # optimizer.zero_grad()           
+            loss.backward()
+            optimizer.step()   
+            optimizer.zero_grad()           
 
-        losses.append(total_loss)
-        total_loss.backward()
-        optimizer.step() 
-        optimizer.zero_grad()           
+        losses.append(total_loss.item())
+        # total_loss.backward()
+        # optimizer.step() 
+        # optimizer.zero_grad()           
         print("Backward prop...")
         print(total_loss)
-
+        # pdb.set_trace()
         # for param in model.parameters():
         #     param.data.clamp_(0, 2*torch.pi)
 

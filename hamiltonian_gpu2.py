@@ -16,12 +16,12 @@ import pdb
 complex_const = -1j
 
 
-N = 8
+N = 10
 L1 = 8
 
 N1 = N
 j = [1.] * (N1-1)
-omega = -20
+omega = -10
 rabif =  [0] * (N1 - 1) + [omega]
 detun = [2 * val for val in j] + [2 * sum(j)]
 inter = [4 * val for val in j]
@@ -206,7 +206,7 @@ class QuantumPerceptron(nn.Module):
         a = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
         b = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
         g = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
-        self.params = nn.Parameter(torch.zeros_like(torch.stack((a,b,g))))
+        self.params = nn.Parameter((torch.stack((a,b,g))))
         self.params.requires_grad = True
 
         # self.params = nn.Parameter(torch.tensor([1.,0.,0.,0.,0.,0.,0.,0]))
@@ -262,7 +262,7 @@ model = model
 # Initialize parameters with Gaussian distribution centered at 0
 # import matplotlib.pyplot as plt
 # Set a seed for reproducibility
-torch.manual_seed(0)
+torch.manual_seed(42)
 
 x = Z2DatasetLoader()
 y = Z3DatasetLoader()
@@ -329,7 +329,7 @@ for epoch in range(2000):
             optimizer.step()
             optimizer.zero_grad()            
 
-
+        losses.append(total_loss.item())
         # total_loss.backward()
         # optimizer.step()  
         # optimizer.zero_grad()          

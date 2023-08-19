@@ -31,12 +31,12 @@ complex_const = -1j
 
 tracemalloc.start()
 
-N = 5
+N = 7
 L1 = 4
 
 N1 = N
-j = [0.4] * (N1-1)
-omega = -20
+j = [1.] * (N1-1)
+omega = -10
 rabif =  [0] * (N1 - 1) + [omega]
 detun = [2 * val for val in j] + [2 * sum(j)]
 inter = [4 * val for val in j]
@@ -156,6 +156,7 @@ def expectation(state,time,params):
     state = (torch.kron(state, torch.tensor([1.,0.])))
     # with torch.no_grad():
     U = evolution(time,params,L)
+    # pdb.set_trace()
     state = U @ state.view(-1,state.size()[0])
     state_final = torch.abs(state) ** 2
     # del state_final
@@ -202,7 +203,7 @@ class QuantumPerceptron(nn.Module):
         # a = torch.zeros(size=[L,2,N1])
         # b = torch.zeros(size=[L,2,N1])
         # g = torch.zeros(size=[L,2,N1])
-        self.params = nn.Parameter((torch.stack((a,b,g))))
+        self.params = nn.Parameter(torch.ones_like(torch.stack((a,b,g))))
         self.params.requires_grad = True
 
         # self.params = nn.Parameter(torch.tensor([1.,0.,0.,0.,0.,0.,0.,0]))
@@ -230,7 +231,7 @@ class QuantumPerceptron(nn.Module):
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
 model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 0)
 criterion = nn.MSELoss()
-optimizer = optim.Adadelta(model.parameters(), lr = 0.01)
+optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
 
 torch.manual_seed(0)
@@ -273,6 +274,7 @@ for epoch in range(3000):
         # optimizer.zero_grad()           
         print("Backward prop...")
         print(total_loss)
+        # pdb.set_trace()
 
         # for param in model.parameters():
         #     param.data.clamp_(0, 2*torch.pi)
