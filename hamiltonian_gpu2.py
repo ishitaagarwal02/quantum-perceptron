@@ -195,7 +195,7 @@ class QuantumPerceptron(nn.Module):
     """
     def __init__(self, input_size, hidden_size, output_size):
         super(QuantumPerceptron, self).__init__()
-        self.layer1 = nn.Linear(input_size, output_size)
+        self.layer1 = nn.Linear(input_size, hidden_size)
         self.mid_layers = nn.ModuleList()
         for _ in range(num_layers):
             self.mid_layers.append(nn.Linear(hidden_size, hidden_size))
