@@ -8,7 +8,7 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
 D = 8
-torch.manual_seed(42)
+torch.manual_seed(0)
 
 def z1phase():
     
