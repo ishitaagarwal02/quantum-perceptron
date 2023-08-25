@@ -196,10 +196,10 @@ class QuantumPerceptron(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(QuantumPerceptron, self).__init__()
         self.layer1 = nn.Linear(input_size, output_size)
-        # self.mid_layers = nn.ModuleList()
-        # for _ in range(num_layers):
-        #     self.mid_layers.append(nn.Linear(hidden_size, hidden_size))
-        # self.layer2 = nn.Linear(hidden_size, output_size)
+        self.mid_layers = nn.ModuleList()
+        for _ in range(num_layers):
+            self.mid_layers.append(nn.Linear(hidden_size, hidden_size))
+        self.layer2 = nn.Linear(hidden_size, output_size)
         # self.layer1 = nn.Linear(input_size, output_size)
         L = L1
         N1 = N
@@ -243,17 +243,17 @@ class QuantumPerceptron(nn.Module):
         # print(self.r)
         out = self.layer1(self.r)
         # out = F.gelu(out)
-        # for layer in self.mid_layers:
-        #     out = layer(out)
-        #     out = F.gelu(out)
-        # out = self.layer2(out)
-        out = F.relu(out)
+        for layer in self.mid_layers:
+            out = layer(out)
+            out = F.tanh(out)
+        out = self.layer2(out)
+        out = F.tanh(out)
         # return return_energy(out)
         return out
         # return out
 
 
-model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
+model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 144).to(device)
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
 optimizer = optim.SGD(model.parameters(), lr = 0.01)
