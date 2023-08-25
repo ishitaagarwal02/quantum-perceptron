@@ -256,13 +256,13 @@ class QuantumPerceptron(nn.Module):
 model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
-optimizer = optim.SGD(model.parameters(), lr = 0.01)
+optimizer = optim.SGD(model.parameters(), lr = 0.0)
 model = model
 # params = torch.randn(8)  # initial 
 # Initialize parameters with Gaussian distribution centered at 0
 # import matplotlib.pyplot as plt
 # Set a seed for reproducibility
-torch.manual_seed(420)
+torch.manual_seed(42)
 
 x = Z2DatasetLoader()
 y = Z3DatasetLoader()
