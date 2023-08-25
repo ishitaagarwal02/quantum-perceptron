@@ -262,7 +262,7 @@ model = model
 # Initialize parameters with Gaussian distribution centered at 0
 # import matplotlib.pyplot as plt
 # Set a seed for reproducibility
-torch.manual_seed(0)
+torch.manual_seed(10000)
 
 x = Z2DatasetLoader()
 y = Z3DatasetLoader()
