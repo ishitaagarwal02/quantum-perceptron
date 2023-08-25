@@ -20,7 +20,7 @@ N = 9
 L1 = 5
 
 N1 = N
-j = [1.] * (N1-1)
+j = [torch.normal(0., 1.).item()] * (N1-1)
 omega = -10
 rabif =  [0] * (N1 - 1) + [omega]
 detun = [2 * val for val in j] + [2 * sum(j)]
