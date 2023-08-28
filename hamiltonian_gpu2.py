@@ -248,7 +248,7 @@ class QuantumPerceptron(nn.Module):
         #     out = layer(out)
         #     out = F.tanh(out)
         # out = self.layer2(out)
-        out = F.tanh(out)
+        out = F.relu(out)
         # return return_energy(out)
         return out
         # return out
@@ -257,7 +257,7 @@ class QuantumPerceptron(nn.Module):
 model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1).to(device)
 # model = QuantumPerceptron(input_size= 9, output_size= 1, hidden_size = 1)
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr = 0.02)
+optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
 # params = torch.randn(8)  # initial 
 # Initialize parameters with Gaussian distribution centered at 0
