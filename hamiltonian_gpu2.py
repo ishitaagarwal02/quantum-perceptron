@@ -16,8 +16,8 @@ import pdb
 complex_const = -1j
 
 
-N = 9
-L1 = 5
+N = 8
+L1 = 4
 
 N1 = N
 # j = [torch.normal(0., 1., size=(1,)).item()] * (N1-1)
