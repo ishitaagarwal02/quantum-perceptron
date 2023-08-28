@@ -248,7 +248,7 @@ class QuantumPerceptron(nn.Module):
         #     out = layer(out)
         #     out = F.tanh(out)
         # out = self.layer2(out)
-        out = F.relu(out)
+        out = F.tanh(out)
         # return return_energy(out)
         return out
         # return out
