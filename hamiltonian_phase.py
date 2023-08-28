@@ -203,14 +203,14 @@ class QuantumPerceptron(nn.Module):
         # a = torch.zeros(size=[L,2,N1])
         # b = torch.zeros(size=[L,2,N1])
         # g = torch.zeros(size=[L,2,N1])
-        self.params = nn.Parameter(torch.ones_like(torch.stack((a,b,g))))
+        self.params = nn.Parameter((torch.stack((a,b,g))))
         self.params.requires_grad = True
 
         # self.params = nn.Parameter(torch.tensor([1.,0.,0.,0.,0.,0.,0.,0]))
 
     def init_r(self, state):
         self.r = []
-        for t in torch.arange(0.1,1.0,0.1):
+        for t in torch.arange(0.1,1.,0.1):
             expectations = expectation(state, t, self.params)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))

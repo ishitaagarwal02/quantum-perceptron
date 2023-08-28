@@ -16,7 +16,7 @@ complex_const = -1j
 
 tracemalloc.start()
 
-N = 10
+N = 7
 L1 = 4
 
 N1 = N
@@ -30,6 +30,48 @@ inter = [4 * val for val in j]
 # matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 # matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 # matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+# ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+
+# s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64)
+# p = torch.tensor([[1, 0], [0, 1]], dtype=torch.complex64)
+# n = torch.tensor([[0, 0], [0, 1]], dtype=torch.complex64)
+
+# # Loop over all combinations
+# for j in range(N1):
+#     matrices = []
+#     for i in range(N1):
+#         m = s if i == j else p
+#         matrices.append(m)
+#     result = reduce(torch.kron, matrices)
+#     # matrix += rabif[j] * result
+#     ham.add_(rabif[j] * result)
+#     del result
+# # pdb.set_trace()
+
+# for j in range(N1):
+#     matrices = []
+#     for i in range(N1):
+#         m = n if i == j else p
+#         matrices.append(m)
+#     result = reduce(torch.kron, matrices)
+#     # matrix2 += detun[j] * result
+#     ham.add_(-1*detun[j] * result)
+#     del result
+
+# for j in range(N1-1):
+#     matrices = []
+#     for i in range(N1-1):
+#         m=n if i==j else p
+#         matrices.append(m)
+#     matrices.append(n)    
+#     result = reduce(torch.kron, matrices)
+#     # matrix3 += inter[j]*result
+#     ham.add_(inter[j] * result)
+#     del result
+
+matrix = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+matrix2 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
+matrix3 = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 ham = torch.zeros((2**N1, 2**N1), dtype=torch.complex64)
 
 s = torch.tensor([[0, 1], [1, 0]], dtype=torch.complex64)
@@ -44,7 +86,7 @@ for j in range(N1):
         matrices.append(m)
     result = reduce(torch.kron, matrices)
     # matrix += rabif[j] * result
-    ham.add_(rabif[j] * result)
+    matrix.add_(rabif[j] * result)
     del result
 # pdb.set_trace()
 
@@ -55,7 +97,7 @@ for j in range(N1):
         matrices.append(m)
     result = reduce(torch.kron, matrices)
     # matrix2 += detun[j] * result
-    ham.add_(-1*detun[j] * result)
+    matrix2.add_(detun[j] * result)
     del result
 
 for j in range(N1-1):
@@ -66,7 +108,7 @@ for j in range(N1-1):
     matrices.append(n)    
     result = reduce(torch.kron, matrices)
     # matrix3 += inter[j]*result
-    ham.add_(inter[j] * result)
+    matrix3.add_(inter[j] * result)
     del result
 
 
@@ -117,12 +159,12 @@ def get_U(a,b,g):
 def evolution(time, params,l,U):
     N1 = N
     L = L1
-    global ham
+    # global ham
     # a = params[0]
     # b = params[1]
     # g = params[2]
     complex_const = -1j
-    ham = (complex_const * time)*(ham)
+    ham = (complex_const * time)*(matrix - matrix2 + matrix3)
     H = ham.matrix_exp()
     # H = get_H(time)
 
@@ -219,7 +261,7 @@ criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr = 0.01)
 model = model
 
-torch.manual_seed(42)
+torch.manual_seed(0)
 
 # x = Z2DatasetLoader()
 # y = Z3DatasetLoader()
