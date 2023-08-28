@@ -171,7 +171,7 @@ def expectation(state,time,params):
 
 #####################  Import Data loader ###########################
 
-from z2states import Z2StateDataset, Z2DatasetLoader, Z3StateDataset, Z3DatasetLoader, DatasetLoader
+from z2states import Z2StateDataset, Z2DatasetLoader, Z3StateDataset, Z3DatasetLoader, DatasetLoader, DatasetLoaderv
 
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
@@ -210,7 +210,7 @@ class QuantumPerceptron(nn.Module):
 
     def init_r(self, state):
         self.r = []
-        for t in torch.arange(0.1,0.1,0.1):
+        for t in torch.arange(0.1,1.0,0.1):
             expectations = expectation(state, t, self.params)
             self.r.append(expectations)
         # self.r.append(torch.tensor(1.).to(torch.float32))
@@ -239,6 +239,7 @@ torch.manual_seed(0)
 # x = Z2DatasetLoader()
 # y = Z3DatasetLoader()
 z = DatasetLoader()
+w = DatasetLoaderv()
 losses = []
 
 
@@ -246,6 +247,7 @@ losses = []
 # z3_dataset, z3_dataloader = y.return_dataset()
 
 dataset, dataloader = z.return_dataset()
+datasetv, dataloaderv = w.return_dataset()
 
 for epoch in range(3000):
     print("epoch:", epoch)
@@ -310,6 +312,30 @@ for epoch in range(3000):
 
                 accuracy = correct_predictions / total_predictions
                 print(f'Accuracy: {accuracy}')
+
+            print("Starting validation accuracy calculation...")
+            with torch.no_grad():
+
+                correct_predictions = 0
+                total_predictions = 0
+
+                print("Iterating through all (for accuracy)...")    
+
+                for state, val in tqdm(dataloaderv):
+                    pred = model(state)
+
+                    # Convert predictions and true values to -1 or 1
+                    pred_rounded = torch.where(pred < 0, -1, 1).reshape(-1,)
+                    val_rounded = torch.where(val.float() > 0., 1, -1).reshape(-1,)
+
+                    # Count correct predictions
+                    correct_predictions += torch.sum(pred_rounded == val_rounded).item()
+
+                    total_predictions += len(val)
+
+                accuracy = correct_predictions / total_predictions
+                print(f'Accuracy: {accuracy}')
+    
     
     except KeyboardInterrupt:
         pdb.set_trace()
