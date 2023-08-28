@@ -239,6 +239,8 @@ class DatasetLoader():
 for states, labels in dataloader_combined:
     print(states, labels)
 
+print("------------------------")
+
 
 # -------------validation set-----------------
 
@@ -328,6 +330,7 @@ class DatasetLoaderv():
         return dataset_combinedv, dataloader_combinedv
     
 for states, labels in dataloader_combinedv:
+  print("validation states")
   print(states, labels)
 # print(tracemalloc.get_traced_memory())
 
