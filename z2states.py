@@ -7,7 +7,7 @@ from functools import reduce
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
-D = 10
+D = 9
 torch.manual_seed(42)
 
 def z1phase():
