@@ -7,7 +7,7 @@ from functools import reduce
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
-D = 7
+D = 8
 torch.manual_seed(42)
 
 def z1phase():
@@ -21,7 +21,7 @@ def z1phase():
     # for i in torch.arange(15):
         # generate 0000 type states
     for j in torch.arange(N1):
-        r = torch.rand(1) * (1. - 0.7) + 0.7
+        r = torch.rand(1) * (1. - 0.05) + 0.05
         r = torch.tensor([r]) 
         # phi = 2 * torch.pi * torch.rand(1)
         # = torch.cos(phi) + 1j*torch.sin(phi)
@@ -33,7 +33,7 @@ def z1phase():
     matrix = []
     # generate 1111 type states
     for j in torch.arange(N1):
-        r = torch.rand(1) * (1. - 0.7) + 0.7
+        r = torch.rand(1) * (1. - 0.05) + 0.05
         r = torch.tensor([r]) 
         # phi = 2 * torch.pi * torch.rand(1)
         # = torch.cos(phi) + 1j*torch.sin(phi)
@@ -57,7 +57,7 @@ def z2phase():
     # for i in torch.arange(15):
         # generate 0101 type states
     for j in torch.arange(N1):
-        r = torch.rand(1) * (1. - 0.7) + 0.7
+        r = torch.rand(1) * (1. - 0.05) + 0.05
         r = torch.tensor([r]) 
         # phi = 2 * torch.pi * torch.rand(1)
         # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
@@ -72,7 +72,7 @@ def z2phase():
     matrix = []
     # generate 1010 type states
     for j in torch.arange(N1):
-        r = torch.rand(1) * (1. - 0.7) + 0.7
+        r = torch.rand(1) * (1. - 0.05) + 0.05
         r = torch.tensor([r]) 
         # phi = 2 * torch.pi * torch.rand(1)
         # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
@@ -98,7 +98,7 @@ def z3phase():
     # for i in torch.arange(15):
     # generate 001 type states
     for j in torch.arange(N1):
-        r = 0.3 * torch.rand(1)
+        r = 0.05 * torch.rand(1)
         r = torch.tensor([r]) 
         # phi = 2 * torch.pi * torch.rand(1)
         # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
@@ -115,7 +115,7 @@ def z3phase():
     matrix = []
     # generate 010 type states
     for j in torch.arange(N1):
-        r = 0.3 * torch.rand(1)
+        r = 0.05 * torch.rand(1)
         # print(r)
         r = torch.tensor([r]) 
         # phi = 2 * torch.pi * torch.rand(1)
@@ -133,7 +133,7 @@ def z3phase():
     matrix = []
     # generate 001 type states
     for j in torch.arange(N1):
-        r = 0.3 * torch.rand(1)
+        r = 0.05 * torch.rand(1)
         r = torch.tensor([r]) 
         # phi = 2 * torch.pi * torch.rand(1)
         # e_phi = torch.cos(phi) + 1j*torch.sin(phi)
@@ -153,7 +153,7 @@ def z3phase():
 
 z2state_list = []
 z2label_list = []
-for i in torch.arange(36):
+for i in torch.arange(72):
     s21, s22 = z2phase()
     z2state_list.append(s21)
     z2state_list.append(s22)
@@ -192,7 +192,7 @@ class Z2DatasetLoader():
 
 z3state_list = []
 z3label_list = []
-for i in torch.arange(24):
+for i in torch.arange(48):
     s31, s32, s33 = z3phase()
     z3state_list.append(s31)
     z3state_list.append(s32)
