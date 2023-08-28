@@ -174,7 +174,7 @@ def expectation(state,time,U1):
 
 #####################  Import Data loader ###########################
 
-from z2states import Z2StateDataset, Z2DatasetLoader, Z3StateDataset, Z3DatasetLoader, DatasetLoader
+from z2states import Z2StateDataset, Z2DatasetLoader, Z3StateDataset, Z3DatasetLoader, DatasetLoader, DatasetLoaderv
 
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
@@ -268,11 +268,13 @@ torch.manual_seed(42)
 x = Z2DatasetLoader()
 y = Z3DatasetLoader()
 z = DatasetLoader()
+w = DatasetLoaderv()
 
 z2_dataset, z2_dataloader = x.return_dataset()
 z3_dataset, z3_dataloader = y.return_dataset()
 
 dataset, dataloader = z.return_dataset()
+datasetv, dataloaderv = w.return_dataset()
 
 # import pandas as pd
 
@@ -357,6 +359,31 @@ for epoch in range(2000):
                 print("Iterating through all (for accuracy)...")    
 
                 for state, val in tqdm(dataloader):
+                    state = state.to(device)
+                    val = val.to(device)
+                    pred = model(state, U)
+
+                    # Convert predictions and true values to -1 or 1
+                    pred_rounded = torch.where(pred < 0, -1, 1).reshape(-1,)
+                    val_rounded = torch.where(val.float() > 0., 1, -1).reshape(-1,)
+
+                    # Count correct predictions
+                    correct_predictions += torch.sum(pred_rounded == val_rounded).item()
+
+                    total_predictions += len(val)
+
+                accuracy = correct_predictions / total_predictions
+                print(f'Accuracy: {accuracy}')
+
+            print("Starting validation accuracy calculation...")
+            with torch.no_grad():
+
+                correct_predictions = 0
+                total_predictions = 0
+
+                print("Iterating through all (for accuracy)...")    
+
+                for state, val in tqdm(dataloaderv):
                     state = state.to(device)
                     val = val.to(device)
                     pred = model(state, U)

@@ -230,7 +230,7 @@ dataloader_z3 = DataLoader(dataset_z3, batch_size=18, shuffle=False)
 from torch.utils.data import ConcatDataset
 
 dataset_combined = ConcatDataset([dataset_z2, dataset_z3])
-dataloader_combined = DataLoader(dataset_combined, batch_size=18, shuffle=False)
+dataloader_combined = DataLoader(dataset_combined, batch_size=36, shuffle=False)
 
 class DatasetLoader():
     def return_dataset(self):
@@ -238,6 +238,97 @@ class DatasetLoader():
     
 for states, labels in dataloader_combined:
     print(states, labels)
+
+
+# -------------validation set-----------------
+
+z2state_listv = []
+z2label_listv = []
+for i in torch.arange(9):
+    s21v, s22v = z2phase()
+    z2state_listv.append(s21v)
+    z2state_listv.append(s22v)
+    z2label_listv.append(torch.tensor(-1.))  # Adding label -1 for each state
+    z2label_listv.append(torch.tensor(-1.))
+
+# print(tracemalloc.get_traced_memory())
+class Z2StateDatasetv(Dataset):
+    def __init__(self, z2state_listv, z2label_listv):
+        self.state_listv = z2state_list
+        self.label_listv = z2label_list
+
+    def __len__(self):
+        return len(self.state_listv)
+
+    def __getitem__(self, idx):
+        return self.state_listv[idx], self.label_listv[idx]
+
+dataset_z2v = Z2StateDataset(z2state_listv, z2label_listv)
+
+# Create the dataloader
+dataloader_z2v = DataLoader(dataset_z2v, batch_size=18, shuffle=False)
+
+class Z2DatasetLoaderv():
+    def return_dataset(self):
+        dataset = Z2StateDatasetv(z2state_listv, z2label_listv)
+        dataloader = DataLoader(dataset, batch_size=18, shuffle=False)
+        return dataset, dataloader
+    
+# for states, labels in dataloader_z2:
+#     # pdb.set_trace()
+#     print(states, labels)
+
+# print(tracemalloc.get_traced_memory())
+
+
+z3state_listv = []
+z3label_listv = []
+for i in torch.arange(6):
+    s31v, s32v, s33v = z3phase()
+    z3state_listv.append(s31)
+    z3state_listv.append(s32)
+    z3state_listv.append(s33)
+    z3label_listv.append(torch.tensor(1.))  # Adding label -1 for each state
+    z3label_listv.append(torch.tensor(1.))
+    z3label_listv.append(torch.tensor(1.))
+
+class Z3StateDatasetv(Dataset):
+    def __init__(self, z3state_listv, z3label_listv):
+        self.state_listv = z3state_listv
+        self.label_listv = z3label_listv
+
+    def __len__(self):
+        return len(self.state_listv)
+
+    def __getitem__(self, idx):
+        return self.state_listv[idx], self.label_listv[idx]
+
+dataset_z3v = Z3StateDatasetv(z3state_listv, z3label_listv)
+
+class Z3DatasetLoaderv():
+    def return_dataset(self):
+        dataset = Z3StateDatasetv(z3state_listv, z3label_listv)
+        dataloader = DataLoader(dataset, batch_size=18, shuffle=False)
+        return dataset, dataloader
+
+# Create the dataloader
+dataloader_z3v = DataLoader(dataset_z3v, batch_size=18, shuffle=False)
+# for states, labels in dataloader_z3:
+#     print(states, labels)
+
+# print(tracemalloc.get_traced_memory())
+
+# from torch.utils.data import ConcatDataset
+
+dataset_combinedv = ConcatDataset([dataset_z2v, dataset_z3v])
+dataloader_combinedv = DataLoader(dataset_combinedv, batch_size=9, shuffle=False)
+
+class DatasetLoaderv():
+    def return_dataset(self):
+        return dataset_combinedv, dataloader_combinedv
+    
+for states, labels in dataloader_combinedv:
+  print(states, labels)
 # print(tracemalloc.get_traced_memory())
 
 # snapshot = tracemalloc.take_snapshot()
