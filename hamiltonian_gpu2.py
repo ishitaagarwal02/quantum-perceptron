@@ -204,9 +204,9 @@ class QuantumPerceptron(nn.Module):
         # self.layer1 = nn.Linear(input_size, output_size)
         L = L1
         N1 = N
-        a = torch.normal(mean=0.0, std=0.1, size=[L,2,N1]).to(device)
-        b = torch.normal(mean=0.0, std=0.1, size=[L,2,N1]).to(device)
-        g = torch.normal(mean=0.0, std=0.1, size=[L,2,N1]).to(device)
+        a = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
+        b = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
+        g = torch.normal(mean=0.0, std=1., size=[L,2,N1]).to(device)
         self.params = nn.Parameter((torch.stack((a,b,g))))
         self.params.requires_grad = True
 
