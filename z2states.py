@@ -256,8 +256,8 @@ for i in torch.arange(9):
 # print(tracemalloc.get_traced_memory())
 class Z2StateDatasetv(Dataset):
     def __init__(self, z2state_listv, z2label_listv):
-        self.state_listv = z2state_list
-        self.label_listv = z2label_list
+        self.state_listv = z2state_listv
+        self.label_listv = z2label_listv
 
     def __len__(self):
         return len(self.state_listv)
